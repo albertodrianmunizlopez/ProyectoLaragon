@@ -22,3 +22,4 @@ content = re.sub(
 with open(f, 'w', encoding='utf-8') as file:
     file.write(content)
 print("Updated app.py redirect")
+                                
