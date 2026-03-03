@@ -1,0 +1,314 @@
+﻿<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MACUIN - {% if autoparte %}Editar Autoparte{% else %}Registrar Autoparte{% endif %}</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://unpkg.com/feather-icons"></script>
+
+</head>
+
+<body class="dashboard-body">
+
+    <div class="dashboard-layout">
+
+        
+
+        <!-- Sidebar (Reutilizado del Dashboard) -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar-header">
+
+                <h2>MACUIN</h2>
+
+                <span class="subtitle">Portal Interno</span>
+
+            </div>
+
+            <nav class="sidebar-nav">
+
+                <ul>
+
+                                                            <li>
+                        <a href="/inventario" class="active">
+                            <i data-feather="box"></i>
+                            Inventario / Autopartes
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/almacen/actualizar">
+                            <i data-feather="repeat"></i>
+                            Actualización Rápida
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/almacen/actualizar">
+                            <i data-feather="repeat"></i>
+                            Actualización Rápida
+                        </a>
+                    </li>
+
+                    <li>
+
+                        <a href="/pedidos">
+                            <i data-feather="shopping-cart"></i>
+                            Pedidos
+                        </a>
+
+                    </li>
+
+                    <li>
+
+                        <a href="/reportes">
+
+                            <i data-feather="bar-chart-2"></i>
+
+                            Reportes
+
+                        </a>
+
+                    </li>
+
+                </ul>
+
+            </nav>
+
+            <div class="sidebar-footer">
+
+                <a href="/" class="logout-link">
+
+                    <i data-feather="log-out"></i>
+
+                    Cerrar Sesión
+
+                </a>
+
+            </div>
+
+        </aside>
+
+
+
+        <!-- Contenido Principal -->
+
+        <main class="main-content form-view-content">
+
+            
+
+            <div class="form-container">
+
+                <!-- Enlace de regreso -->
+
+                <a href="/inventario" class="back-link">
+
+                    <i data-feather="arrow-left"></i>
+
+                    Volver al listado
+
+                </a>
+
+
+
+                <!-- Tarjeta del Formulario -->
+
+                <div class="form-card">
+
+                    <header class="form-header">
+
+                        <h1 class="page-title">
+
+                            {% if autoparte %}Editar Autoparte{% else %}Registrar Nueva Autoparte{% endif %}
+
+                        </h1>
+
+                        <p class="page-description">Complete los detalles de la pieza en el sistema central.</p>
+
+                    </header>
+
+
+
+                    <form action="/autoparte/guardar" method="POST" id="autoparteForm">
+
+                        <div class="form-grid-2">
+
+                            <!-- Código SKU -->
+
+                            <div class="form-group">
+
+                                <label for="codigo">Código SKU / Número de parte</label>
+
+                                <input type="text" id="codigo" name="codigo" 
+
+                                       value="{{ autoparte.codigo if autoparte else '' }}" 
+
+                                       placeholder="Ej. BOSCH-001" required {% if autoparte %}readonly{% endif %}>
+
+                            </div>
+
+
+
+                            <!-- Nombre -->
+
+                            <div class="form-group">
+
+                                <label for="nombre">Nombre de la pieza</label>
+
+                                <input type="text" id="nombre" name="nombre" 
+
+                                       value="{{ autoparte.nombre if autoparte else '' }}" 
+
+                                       placeholder="Ej. Filtro de Aceite Sintético" required>
+
+                            </div>
+
+
+
+                            <!-- CATEGORÍA -->
+
+                            <div class="form-group">
+
+                                <label for="categoria">CATEGORÍA / Sistema</label>
+
+                                <select id="categoria" name="categoria" required>
+
+                                    <option value="" disabled {% if not autoparte %}selected{% endif %}>Seleccione una CATEGORÍA</option>
+
+                                    <option value="Motor" {% if autoparte and autoparte.categoria == 'Motor' %}selected{% endif %}>Motor</option>
+
+                                    <option value="Frenos" {% if autoparte and autoparte.categoria == 'Frenos' %}selected{% endif %}>Frenos</option>
+
+                                    <option value="Eléctrico" {% if autoparte and autoparte.categoria == 'Eléctrico' %}selected{% endif %}>Eléctrico</option>
+
+                                    <option value="Suspensión" {% if autoparte and autoparte.categoria == 'Suspensión' %}selected{% endif %}>Suspensión</option>
+
+                                    <option value="Encendido" {% if autoparte and autoparte.categoria == 'Encendido' %}selected{% endif %}>Encendido</option>
+
+                                    <option value="Ruedas" {% if autoparte and autoparte.categoria == 'Ruedas' %}selected{% endif %}>Ruedas</option>
+
+                                </select>
+
+                            </div>
+
+
+
+                            <!-- Precio Unitario -->
+
+                            <div class="form-group">
+
+                                <label for="precio">Precio Unitario ($)</label>
+
+                                <input type="number" id="precio" name="precio" step="0.01" min="0" 
+
+                                       value="{{ autoparte.precio if autoparte else '' }}" 
+
+                                       placeholder="0.00" required>
+
+                            </div>
+
+
+
+                            <!-- Stock Inicial -->
+
+                            <div class="form-group">
+
+                                <label for="stock">Stock {% if autoparte %}Actual{% else %}Inicial{% endif %}</label>
+
+                                <input type="number" id="stock" name="stock" min="0" 
+
+                                       value="{{ autoparte.stock if autoparte else '' }}" 
+
+                                       placeholder="0" required>
+
+                            </div>
+
+
+
+                            <!-- Espacio vacío para balancear el grid si fuera necesario, o dejar que descripción ocupe ambas columnas -->
+
+                            
+
+                            <!-- Descripción (Ancho completo) -->
+
+                            <div class="form-group full-width">
+
+                                <label for="descripcion">Descripción detallada</label>
+
+                                <textarea id="descripcion" name="descripcion" rows="4" 
+
+                                          placeholder="Especificaciones técnicas, compatibilidad con modelos, etc."
+
+                                >{{ autoparte.descripcion if autoparte else '' }}</textarea>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- Acciones -->
+
+                        <div class="form-actions border-top">
+
+                            <a href="/inventario" class="btn-secondary">Cancelar</a>
+
+                            <button type="submit" class="btn-primary">
+
+                                <i data-feather="save"></i>
+
+                                Guardar Autoparte
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+            
+
+        </main>
+
+    </div>
+
+
+
+    <script>
+
+        feather.replace();
+
+        
+
+        // Opcional: Script para enviar como JSON si se prefiere sobre el form submit clásico
+
+        document.getElementById('autoparteForm').addEventListener('submit', function(e) {
+
+            // e.preventDefault();
+
+            // Lógica fetch() para mandar JSON a FastAPI si fuera necesario aquí
+
+            // const formData = new FormData(this);
+
+            // const data = Object.fromEntries(formData.entries());
+
+            // console.log("Datos a enviar:", data);
+
+        });
+
+    </script>
+
+</body>
+
+</html>
+

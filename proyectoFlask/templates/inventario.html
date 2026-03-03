@@ -1,0 +1,279 @@
+﻿<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MACUIN - Gestión de Autopartes</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Opcional: Iconos ligeros (puedes usar SVG directamente o una librería como Feather Icons) -->
+
+    <script src="https://unpkg.com/feather-icons"></script>
+
+</head>
+
+<body class="dashboard-body">
+
+    <div class="dashboard-layout">
+
+        
+
+        <!-- Barra de Navegación Lateral (Sidebar) -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar-header">
+
+                <h2>MACUIN</h2>
+
+                <span class="subtitle">Portal Interno</span>
+
+            </div>
+
+            <nav class="sidebar-nav">
+
+                <ul>
+
+                                        <li>
+
+                        <a href="/inventario" class="active">
+
+                            <i data-feather="box"></i>
+
+                            Inventario / Autopartes
+
+                        </a>
+
+                    </li>
+                    <li>
+                        <a href="/almacen/actualizar">
+                            <i data-feather="repeat"></i>
+                            Actualización Rápida
+                        </a>
+                    </li>
+
+                    <li>
+
+                        <a href="/pedidos">
+                            <i data-feather="shopping-cart"></i>
+                            Pedidos
+                        </a>
+
+                    </li>
+
+                    <li>
+
+                        <a href="/reportes">
+
+                            <i data-feather="bar-chart-2"></i>
+
+                            Reportes
+
+                        </a>
+
+                    </li>
+
+                </ul>
+
+            </nav>
+
+            <div class="sidebar-footer">
+
+                <a href="/" class="logout-link">
+
+                    <i data-feather="log-out"></i>
+
+                    Cerrar Sesión
+
+                </a>
+
+            </div>
+
+        </aside>
+
+
+
+        <!-- Contenido Principal -->
+
+        <main class="main-content">
+
+            <!-- Cabecera de la Sección -->
+
+            <header class="section-header">
+
+                <div>
+
+                    <h1 class="page-title">Gestión de Autopartes</h1>
+
+                    <p class="page-description">Administra el inventario, precios y detalles de las piezas.</p>
+
+                </div>
+
+                <div class="header-actions">
+
+                    <div class="search-bar">
+
+                        <i data-feather="search" class="search-icon"></i>
+
+                        <input type="text" placeholder="Buscar por nombre o Código..." class="search-input">
+
+                    </div>
+
+                    <a href="/autoparte/nueva" class="btn-primary" style="text-decoration: none;">
+
+                        <i data-feather="plus"></i> Nueva Autoparte
+
+                    </a>
+
+                </div>
+
+            </header>
+
+
+
+            <!-- Tabla de Datos -->
+
+            <section class="table-container">
+
+                <table class="data-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>ID / Código</th>
+
+                            <th>Nombre de la pieza</th>
+
+                            <th>CATEGORÍA / Marca</th>
+
+                            <th>Stock Actual</th>
+
+                            <th>Precio Unit.</th>
+
+                            <th class="actions-col">Acciones</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <!-- Bucle Jinja para iterar sobre los datos provenientes de FastAPI -->
+
+                        {% for autoparte in autopartes %}
+
+                        <tr>
+
+                            <td class="font-mono text-muted">{{ autoparte.codigo }}</td>
+
+                            <td class="font-medium">{{ autoparte.nombre }}</td>
+
+                            <td>
+
+                                <span class="badge-category">{{ autoparte.categoria }}</span>
+
+                                <span class="text-sm text-muted block mt-1">{{ autoparte.marca }}</span>
+
+                            </td>
+
+                            <td>
+
+                                <!-- Resaltado sutil si el stock es bajo (ej. menor a 10) -->
+
+                                <span class="badge-stock {% if autoparte.stock <= 10 %}low-stock{% endif %}">
+
+                                    {{ autoparte.stock }} und.
+
+                                </span>
+
+                            </td>
+
+                            <td class="font-medium text-right">${{ "%.2f"|format(autoparte.precio) }}</td>
+
+                            <td class="actions-cell">
+
+                                <a href="/autoparte/editar/{{ autoparte.codigo }}" class="btn-icon" title="Editar">
+
+                                    <i data-feather="edit-2"></i>
+
+                                </a>
+
+                                <button class="btn-icon" title="Actualizar Inventario">
+
+                                    <i data-feather="refresh-cw"></i>
+
+                                </button>
+
+                            </td>
+
+                        </tr>
+
+                        {% else %}
+
+                        <tr>
+
+                            <td colspan="6" class="empty-state">No se encontraron autopartes en el inventario.</td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </section>
+
+
+
+            <!-- Paginación -->
+
+            <div class="pagination-container">
+
+                <span class="pagination-info">Mostrando 1 a 5 de 156 resultados</span>
+
+                <div class="pagination-controls">
+
+                    <button class="btn-paginate" disabled><i data-feather="chevron-left"></i> Anterior</button>
+
+                    <button class="btn-paginate active">1</button>
+
+                    <button class="btn-paginate">2</button>
+
+                    <button class="btn-paginate">3</button>
+
+                    <span class="pagination-ellipsis">...</span>
+
+                    <button class="btn-paginate">10</button>
+
+                    <button class="btn-paginate">Siguiente <i data-feather="chevron-right"></i></button>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+
+    <!-- Inicializar iconos -->
+
+    <script>
+
+        feather.replace();
+
+    </script>
+
+</body>
+
+</html>
+
