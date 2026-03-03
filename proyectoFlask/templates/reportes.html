@@ -1,0 +1,450 @@
+﻿<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MACUIN - Centro de Reportes y Estadísticas</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://unpkg.com/feather-icons"></script>
+
+</head>
+
+<body class="dashboard-body">
+
+    <div class="dashboard-layout">
+
+        
+
+        <!-- Sidebar (Reutilizado) -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar-header">
+
+                <h2>MACUIN</h2>
+
+                <span class="subtitle">Portal Interno - Gerencia</span>
+
+            </div>
+
+            <nav class="sidebar-nav">
+
+                <ul>
+
+                    <li>
+
+                        <a href="/inventario">
+
+                            <i data-feather="box"></i>
+
+                            Inventario / Autopartes
+
+                        </a>
+
+                    </li>
+
+                    <li>
+
+                        <a href="/almacen/actualizar">
+
+                            <i data-feather="repeat"></i>
+
+                            Actualización Rápida
+
+                        </a>
+
+                    </li>
+
+                    <li>
+
+                        <a href="/pedidos">
+
+                            <i data-feather="shopping-cart"></i>
+
+                            Pedidos
+
+                        </a>
+
+                    </li>
+
+                    <li>
+
+                        <a href="/reportes" class="active">
+
+                            <i data-feather="bar-chart-2"></i>
+
+                            Reportes
+
+                        </a>
+
+                    </li>
+
+                </ul>
+
+            </nav>
+
+            <div class="sidebar-footer">
+
+                <a href="/" class="logout-link">
+
+                    <i data-feather="log-out"></i>
+
+                    Cerrar Sesión
+
+                </a>
+
+            </div>
+
+        </aside>
+
+
+
+        <!-- Contenido Principal -->
+
+        <main class="main-content">
+
+            
+
+            <header class="section-header flex-between align-center mb-8">
+
+                <div>
+
+                    <h1 class="page-title">Centro de Reportes y Estadísticas</h1>
+
+                    <p class="page-description">Métricas consolidadas de la empresa (Business Intelligence).</p>
+
+                </div>
+
+                
+
+                <!-- Selector Global de Fechas -->
+
+                <form action="/reportes" method="GET" class="bi-date-filter">
+
+                    <div class="date-range-group">
+
+                        <input type="date" name="fecha_inicio" class="filter-input date-input" aria-label="Fecha inicio" 
+
+                               value="{{ filtros.inicio if filtros else '' }}">
+
+                        <span class="date-separator">hasta</span>
+
+                        <input type="date" name="fecha_fin" class="filter-input date-input" aria-label="Fecha fin"
+
+                               value="{{ filtros.fin if filtros else '' }}">
+
+                    </div>
+
+                    <button type="submit" class="btn-primary">Generar / Actualizar</button>
+
+                </form>
+
+            </header>
+
+
+
+            <!-- Fila de Indicadores Clave (KPI Cards) -->
+
+            <div class="kpi-grid">
+
+                <!-- KPI 1 -->
+
+                <div class="kpi-card">
+
+                    <div class="kpi-header">
+
+                        <span class="kpi-title">Total de Ventas</span>
+
+                        <div class="kpi-icon-wrapper"><i data-feather="dollar-sign"></i></div>
+
+                    </div>
+
+                    <div class="kpi-value">${{ "{:,.2f}".format(kpi.ventas|default(0)) }}</div>
+
+                    <div class="kpi-trend text-muted">
+
+                        <i data-feather="trending-up" class="trend-icon"></i> 
+
+                        <span class="trend-text">+12% vs mes anterior</span>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- KPI 2 -->
+
+                <div class="kpi-card">
+
+                    <div class="kpi-header">
+
+                        <span class="kpi-title">Pedidos Completados</span>
+
+                        <div class="kpi-icon-wrapper"><i data-feather="check-circle"></i></div>
+
+                    </div>
+
+                    <div class="kpi-value">{{ kpi.pedidos|default(0) }}</div>
+
+                    <div class="kpi-trend text-muted">
+
+                        <i data-feather="trending-up" class="trend-icon"></i> 
+
+                        <span class="trend-text">+5% vs mes anterior</span>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- KPI 3 -->
+
+                <div class="kpi-card">
+
+                    <div class="kpi-header">
+
+                        <span class="kpi-title">Nuevos Clientes Registrados</span>
+
+                        <div class="kpi-icon-wrapper"><i data-feather="users"></i></div>
+
+                    </div>
+
+                    <div class="kpi-value">{{ kpi.clientes|default('0') }}</div>
+
+                    <div class="kpi-trend text-muted">
+
+                        <i data-feather="minus" class="trend-icon text-muted"></i> 
+
+                        <span class="trend-text">Estable vs mes anterior</span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Sección de Pestañas / Filtros por CATEGORÍA -->
+
+            <div class="segmented-control-wrapper mt-8 mb-6">
+
+                <!-- Se usan enlaces como tabs, pero todos llevan a la misma vista simulando parámetros GET -->
+
+                <nav class="segmented-control">
+
+                    <a href="?tipo=ventas" class="segment-item {% if report_type == 'ventas' %}active{% endif %}">Reporte de Ventas</a>
+
+                    <a href="?tipo=pedidos" class="segment-item {% if report_type == 'pedidos' %}active{% endif %}">Reporte de Pedidos</a>
+
+                    <a href="?tipo=clientes" class="segment-item {% if report_type == 'clientes' %}active{% endif %}">Reporte de Clientes</a>
+
+                </nav>
+
+            </div>
+
+
+
+            <div class="details-grid mt-6">
+
+                <!-- Columna Grande: Gráfico Grayscale (CSS Mockup) -->
+
+                <div class="data-card">
+
+                    <div class="card-header">
+
+                        <h3 class="card-title"><i data-feather="bar-chart" aria-hidden="true"></i> Tendencia de {{ report_type|capitalize }}</h3>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <!-- Mockup visual de un gráfico de barras con puro CSS y divs -->
+
+                        <div class="mock-chart-container">
+
+                            <div class="y-axis-labels">
+
+                                <span>100k</span><span>75k</span><span>50k</span><span>25k</span><span>0</span>
+
+                            </div>
+
+                            <div class="chart-bars">
+
+                                <!-- Barras en diferentes grises -->
+
+                                <div class="bar-column">
+
+                                    <div class="bar" style="height: 40%; background-color: #d4d4d8;"></div>
+
+                                    <span class="x-label">Lun</span>
+
+                                </div>
+
+                                <div class="bar-column">
+
+                                    <div class="bar" style="height: 65%; background-color: #a1a1aa;"></div>
+
+                                    <span class="x-label">Mar</span>
+
+                                </div>
+
+                                <div class="bar-column">
+
+                                    <div class="bar" style="height: 30%; background-color: #d4d4d8;"></div>
+
+                                    <span class="x-label">Mié</span>
+
+                                </div>
+
+                                <div class="bar-column">
+
+                                    <div class="bar" style="height: 85%; background-color: var(--text-main);"></div> <!-- Pico principal -->
+
+                                    <span class="x-label">Jue</span>
+
+                                </div>
+
+                                <div class="bar-column">
+
+                                    <div class="bar" style="height: 55%; background-color: #71717a;"></div>
+
+                                    <span class="x-label">Vie</span>
+
+                                </div>
+
+                                <div class="bar-column">
+
+                                    <div class="bar" style="height: 20%; background-color: #e4e4e7;"></div>
+
+                                    <span class="x-label">Sáb</span>
+
+                                </div>
+
+                                <div class="bar-column">
+
+                                    <div class="bar" style="height: 10%; background-color: #f4f4f5; border: 1px solid #d4d4d8;"></div>
+
+                                    <span class="x-label">Dom</span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- Columna Pequeña: Tabla Resumen -->
+
+                <div class="data-card">
+
+                    <div class="card-header">
+
+                        <h3 class="card-title"><i data-feather="file-text" aria-hidden="true"></i> Desglose</h3>
+
+                    </div>
+
+                    <div class="card-body flush-body">
+
+                        <table class="data-table details-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Segmento</th>
+
+                                    <th class="text-right">Volumen</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody>
+
+                                {% if datos_tabla %}
+
+                                    {% for row in datos_tabla %}
+
+                                    <tr>
+
+                                        <td class="font-medium text-sm">{{ row.segmento }}</td>
+
+                                        <td class="text-right text-muted text-sm">{{ row.valor }}</td>
+
+                                    </tr>
+
+                                    {% endfor %}
+
+                                {% else %}
+
+                                    <tr>
+
+                                        <td colspan="2" class="empty-state" style="padding: 24px!important;">Sin datos en el periodo.</td>
+
+                                    </tr>
+
+                                {% endif %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Acciones de Exportación (Pie de Vista) -->
+
+            <div class="export-actions border-top">
+
+                <button class="btn-secondary">
+
+                    <i data-feather="download" aria-hidden="true"></i> Exportar a Excel (CSV)
+
+                </button>
+
+                <button class="btn-primary">
+
+                    <i data-feather="file" aria-hidden="true"></i> Descargar Reporte en PDF
+
+                </button>
+
+            </div>
+
+
+
+        </main>
+
+    </div>
+
+
+
+    <script>
+
+        feather.replace();
+
+    </script>
+
+</body>
+
+</html>
+

@@ -1,0 +1,436 @@
+﻿<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MACUIN - Detalle de Pedido {{ pedido.id }}</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://unpkg.com/feather-icons"></script>
+
+</head>
+
+<body class="dashboard-body">
+
+    <div class="dashboard-layout">
+
+        
+
+        <!-- Sidebar (Reutilizado) -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar-header">
+
+                <h2>MACUIN</h2>
+
+                <span class="subtitle">Portal Interno</span>
+
+            </div>
+
+            <nav class="sidebar-nav">
+
+                <ul>
+
+                    <li>
+
+                        <a href="/inventario">
+
+                            <i data-feather="box"></i>
+
+                            Inventario / Autopartes
+
+                        </a>
+
+                    </li>
+
+                    <li>
+
+                        <a href="/almacen/actualizar">
+
+                            <i data-feather="repeat"></i>
+
+                            Actualización Rápida
+
+                        </a>
+
+                    </li>
+
+                    <li>
+
+                        <a href="/pedidos" class="active">
+
+                            <i data-feather="shopping-cart"></i>
+
+                            Pedidos
+
+                        </a>
+
+                    </li>
+
+                    <li>
+
+                        <a href="/reportes">
+
+                            <i data-feather="bar-chart-2"></i>
+
+                            Reportes
+
+                        </a>
+
+                    </li>
+
+                </ul>
+
+            </nav>
+
+            <div class="sidebar-footer">
+
+                <a href="/" class="logout-link">
+
+                    <i data-feather="log-out"></i>
+
+                    Cerrar Sesión
+
+                </a>
+
+            </div>
+
+        </aside>
+
+
+
+        <!-- Contenido Principal -->
+
+        <main class="main-content">
+
+            
+
+            <!-- Cabecera -->
+
+            <div class="margin-bottom-24">
+
+                <a href="/pedidos" class="back-link">
+
+                    <i data-feather="arrow-left" aria-hidden="true"></i>
+
+                    Volver al listado de pedidos
+
+                </a>
+
+            </div>
+
+
+
+            <header class="section-header flex-between mb-8">
+
+                <div>
+
+                    <h1 class="page-title">Pedido {{ pedido.id }}</h1>
+
+                    <p class="page-description">Creado el: {{ pedido.fecha_creacion }}</p>
+
+                </div>
+
+            </header>
+
+
+
+            <div class="details-grid">
+
+                <!-- Columna Izquierda: Información -->
+
+                <div class="details-main-col">
+
+                    
+
+                    <!-- Tarjeta: Información del Cliente -->
+
+                    <div class="data-card">
+
+                        <div class="card-header">
+
+                            <h3 class="card-title"><i data-feather="user" aria-hidden="true"></i> Información del Cliente</h3>
+
+                        </div>
+
+                        <div class="card-body client-info-grid">
+
+                            <div>
+
+                                <span class="label-text">Empresa / Nombre</span>
+
+                                <p class="value-text font-medium">{{ pedido.cliente.nombre }}</p>
+
+                            </div>
+
+                            <div>
+
+                                <span class="label-text">Contacto</span>
+
+                                <p class="value-text">{{ pedido.cliente.telefono }}<br>{{ pedido.cliente.email }}</p>
+
+                            </div>
+
+                            <div class="full-width-cell">
+
+                                <span class="label-text">Dirección de Envío</span>
+
+                                <p class="value-text">{{ pedido.cliente.direccion }}</p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- Tarjeta: Lista de Artículos -->
+
+                    <div class="data-card">
+
+                        <div class="card-header">
+
+                            <h3 class="card-title"><i data-feather="list" aria-hidden="true"></i> Artículos del Pedido</h3>
+
+                        </div>
+
+                        <div class="card-body flush-body">
+
+                            <table class="data-table details-table">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>Código</th>
+
+                                        <th>Nombre</th>
+
+                                        <th class="text-center">Cant.</th>
+
+                                        <th class="text-right">Precio Unit.</th>
+
+                                        <th class="text-right">Subtotal</th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody>
+
+                                    {% for item in pedido.articulos %}
+
+                                    <tr>
+
+                                        <td class="font-mono text-muted text-sm">{{ item.codigo }}</td>
+
+                                        <td class="font-medium">{{ item.nombre }}</td>
+
+                                        <td class="text-center">{{ item.cantidad }}</td>
+
+                                        <td class="text-right text-muted">${{ "%.2f"|format(item.precio_unitario) }}</td>
+
+                                        <td class="text-right font-medium">${{ "%.2f"|format(item.cantidad * item.precio_unitario) }}</td>
+
+                                    </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                        
+
+                        <!-- Pie de Página: Resumen Financiero -->
+
+                        <div class="financial-summary">
+
+                            <div class="summary-row">
+
+                                <span class="summary-label">Subtotal</span>
+
+                                <span class="summary-value">${{ "%.2f"|format(pedido.finanzas.subtotal) }}</span>
+
+                            </div>
+
+                            <div class="summary-row">
+
+                                <span class="summary-label">Impuestos (16% IVA)</span>
+
+                                <span class="summary-value">${{ "%.2f"|format(pedido.finanzas.impuestos) }}</span>
+
+                            </div>
+
+                            <div class="summary-row total-row">
+
+                                <span class="summary-label">Total del Pedido</span>
+
+                                <span class="summary-value">${{ "%.2f"|format(pedido.finanzas.total) }}</span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                </div>
+
+
+
+                <!-- Columna Derecha: Acciones / Status -->
+
+                <div class="details-side-col">
+
+                    
+
+                    <div class="data-card action-card">
+
+                        <div class="card-header">
+
+                            <h3 class="card-title"><i data-feather="activity" aria-hidden="true"></i> Gestión de Estatus</h3>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <p class="text-muted text-sm mb-4">Actualice el progreso logístico de esta orden. Esto notificará a la base de datos central.</p>
+
+                            
+
+                            <form action="{{ url_for('actualizar_estatus_pedido') }}" method="POST" class="status-form">
+
+                                <input type="hidden" name="pedido_id" value="{{ pedido.id }}">
+
+                                
+
+                                <label for="estatus_update" class="sr-only">Seleccionar nuevo estatus</label>
+
+                                <select id="estatus_update" name="estatus" class="semantic-status-select mb-4">
+
+                                    <!-- Options values correspond exactly to backend expectations -->
+
+                                    <option value="recibido" class="opt-recibido" {% if pedido.estatus == 'recibido' %}selected{% endif %}>
+
+                                        Recibido (Pendiente)
+
+                                    </option>
+
+                                    <option value="surtido" class="opt-surtido" {% if pedido.estatus == 'surtido' %}selected{% endif %}>
+
+                                        Surtido (En Almacén)
+
+                                    </option>
+
+                                    <option value="enviado" class="opt-enviado" {% if pedido.estatus == 'enviado' %}selected{% endif %}>
+
+                                        Enviado (En Tránsito)
+
+                                    </option>
+
+                                </select>
+
+
+
+                                <button type="submit" class="btn-primary w-full shadow-subtle">
+
+                                    <i data-feather="check-circle" aria-hidden="true"></i>
+
+                                    Actualizar Estatus
+
+                                </button>
+
+                            </form>
+
+                            
+
+                            <!-- Nota sutil para informar estado actual form -->
+
+                            <div class="current-status-note mt-6">
+
+                                <span class="text-xs text-muted block uppercase">Estatus Actual en Sistema:</span>
+
+                                <span class="font-bold text-sm block mt-1">
+
+                                    {% if pedido.estatus == 'recibido' %} Recibido {% elif pedido.estatus == 'surtido' %} Surtido {% else %} Enviado {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                </div>
+
+            </div>
+
+
+
+        </main>
+
+    </div>
+
+
+
+    <script>
+
+        feather.replace();
+
+        
+
+        // Colorea sutilmente el select dependiendo de la opción escogida para dar feedback visual
+
+        const statusSelect = document.getElementById('estatus_update');
+
+        
+
+        function updateSelectColor() {
+
+            statusSelect.className = 'semantic-status-select mb-4'; // Reset classes
+
+            if(statusSelect.value === 'recibido') {
+
+                statusSelect.classList.add('bg-semantic-blue');
+
+            } else if(statusSelect.value === 'surtido') {
+
+                statusSelect.classList.add('bg-semantic-yellow');
+
+            } else if(statusSelect.value === 'enviado') {
+
+                statusSelect.classList.add('bg-semantic-green');
+
+            }
+
+        }
+
+
+
+        statusSelect.addEventListener('change', updateSelectColor);
+
+        // Call on load
+
+        updateSelectColor();
+
+    </script>
+
+</body>
+
+</html>
+
