@@ -1,0 +1,386 @@
+﻿<!DOCTYPE html>
+
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MACUIN - Control Global de Pedidos</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script src="https://unpkg.com/feather-icons"></script>
+
+</head>
+
+<body class="dashboard-body">
+
+    <div class="dashboard-layout">
+
+        
+
+        <!-- Sidebar (Reutilizado) -->
+
+        <aside class="sidebar">
+
+            <div class="sidebar-header">
+
+                <h2>MACUIN</h2>
+
+                <span class="subtitle">Portal Interno</span>
+
+            </div>
+
+            <nav class="sidebar-nav">
+
+                <ul>
+
+                    <li>
+
+                        <a href="/inventario">
+
+                            <i data-feather="box"></i>
+
+                            Inventario / Autopartes
+
+                        </a>
+
+                    </li>
+
+                    <li>
+
+                        <a href="/almacen/actualizar">
+
+                            <i data-feather="repeat"></i>
+
+                            Actualización Rápida
+
+                        </a>
+
+                    </li>
+
+                    <li>
+
+                        <a href="/pedidos" class="active">
+
+                            <i data-feather="shopping-cart"></i>
+
+                            Pedidos
+
+                        </a>
+
+                    </li>
+
+                    <li>
+
+                        <a href="/reportes">
+
+                            <i data-feather="bar-chart-2"></i>
+
+                            Reportes
+
+                        </a>
+
+                    </li>
+
+                </ul>
+
+            </nav>
+
+            <div class="sidebar-footer">
+
+                <a href="/" class="logout-link">
+
+                    <i data-feather="log-out"></i>
+
+                    Cerrar Sesión
+
+                </a>
+
+            </div>
+
+        </aside>
+
+
+
+        <!-- Contenido Principal -->
+
+        <main class="main-content">
+
+            
+
+            <!-- Cabecera de la Sección -->
+
+            <header class="section-header">
+
+                <div>
+
+                    <h1 class="page-title">Control Global de Pedidos</h1>
+
+                    <p class="page-description">Monitoreo y Gestión centralizada de las órdenes de compra.</p>
+
+                </div>
+
+            </header>
+
+
+
+            <!-- Barra de Filtros y Búsqueda -->
+
+            <div class="filters-bar">
+
+                <form action="/pedidos" method="GET" class="filters-form">
+
+                    
+
+                    <!-- Búsqueda -->
+
+                    <div class="filter-group flex-grow">
+
+                        <label for="buscar" class="sr-only">Buscar pedido o cliente</label>
+
+                        <div class="search-input-wrapper">
+
+                            <i data-feather="search" aria-hidden="true"></i>
+
+                            <input type="text" id="buscar" name="buscar" placeholder="Número de pedido o cliente..." class="filter-input w-full">
+
+                        </div>
+
+                    </div>
+
+                    
+
+                    <!-- Filtro Estatus -->
+
+                    <div class="filter-group w-48">
+
+                        <label for="estatus" class="sr-only">Estatus</label>
+
+                        <select id="estatus" name="estatus" class="filter-select">
+
+                            <option value="">Todos los estatus</option>
+
+                            <option value="pendiente">Pendiente</option>
+
+                            <option value="surtido">Surtido en Almacén</option>
+
+                            <option value="enviado">Enviado</option>
+
+                            <option value="entregado">Entregado</option>
+
+                            <option value="cancelado">Cancelado</option>
+
+                        </select>
+
+                    </div>
+
+
+
+                    <!-- Filtro Fecha (Input type date x2 usando flex para simular un rango, o uno solo) -->
+
+                    <div class="filter-group date-range-group">
+
+                        <label class="sr-only">Rango de fechas</label>
+
+                        <input type="date" name="fecha_inicio" title="Fecha inicio" class="filter-input date-input">
+
+                        <span class="date-separator">-</span>
+
+                        <input type="date" name="fecha_fin" title="Fecha fin" class="filter-input date-input">
+
+                    </div>
+
+
+
+                    <button type="submit" class="btn-primary">Filtrar</button>
+
+                    <a href="/pedidos" class="btn-secondary btn-icon-only" title="Limpiar filtros" aria-label="Limpiar">
+
+                        <i data-feather="x"></i>
+
+                    </a>
+
+                </form>
+
+            </div>
+
+
+
+            <!-- Tabla Maestra de Pedidos -->
+
+            <section class="table-container mt-6">
+
+                <table class="data-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>ID Pedido</th>
+
+                            <th>Fecha</th>
+
+                            <th>Cliente</th>
+
+                            <th class="text-right">Artículos</th>
+
+                            <th class="text-right">Total ($)</th>
+
+                            <th>Estatus</th>
+
+                            <th class="actions-col">Acciones</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <!-- Bucle Jinja -->
+
+                        {% for pedido in pedidos %}
+
+                        <tr>
+
+                            <!-- ID Pedido -->
+
+                            <td class="font-mono font-bold">{{ pedido.id }}</td>
+
+                            <!-- Fecha -->
+
+                            <td class="text-sm text-muted">{{ pedido.fecha }}</td>
+
+                            <!-- Cliente -->
+
+                            <td>
+
+                                <span class="font-medium block">{{ pedido.cliente.nombre }}</span>
+
+                                <span class="text-sm text-muted">Tel: {{ pedido.cliente.telefono }}</span>
+
+                            </td>
+
+                            <!-- N. Artículos -->
+
+                            <td class="text-right text-muted">{{ pedido.articulos }}</td>
+
+                            <!-- Total -->
+
+                            <td class="font-medium text-right">${{ "%.2f"|format(pedido.total) }}</td>
+
+                            <!-- Estatus (Badge condicional) -->
+
+                            <td>
+
+                                {% if pedido.estatus == 'Pendiente' %}
+
+                                    <!-- Pendiente: Requiere atención (Acento) -->
+
+                                    <span class="status-badge status-pending">Pendiente</span>
+
+                                {% elif pedido.estatus == 'Surtido' %}
+
+                                    <span class="status-badge status-processing">Surtido</span>
+
+                                {% elif pedido.estatus == 'Enviado' %}
+
+                                    <!-- Enviado: Color gris oscuro pero destacado -->
+
+                                    <span class="status-badge status-shipped">Enviado</span>
+
+                                {% elif pedido.estatus == 'Entregado' %}
+
+                                    <!-- Entregado: Inactivo/Logrado (Gris muy tenue) -->
+
+                                    <span class="status-badge status-delivered">Entregado</span>
+
+                                {% elif pedido.estatus == 'Cancelado' %}
+
+                                    <!-- Cancelado: Tachado / Riesgo -->
+
+                                    <span class="status-badge status-cancelled">Cancelado</span>
+
+                                {% endif %}
+
+                            </td>
+
+                            <!-- Acciones -->
+
+                            <td class="actions-cell">
+
+                                <a href="/pedidos/detalle/{{ pedido.id }}" class="btn-secondary btn-small">
+
+                                    Ver Detalle <i data-feather="chevron-right"></i>
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                        {% else %}
+
+                        <tr>
+
+                            <td colspan="7" class="empty-state">No se encontraron pedidos con los filtros aplicados.</td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </section>
+
+
+
+            <!-- Paginación reutilizada -->
+
+            <div class="pagination-container">
+
+                <span class="pagination-info">Mostrando 1 a 10 de 1,240 pedidos</span>
+
+                <div class="pagination-controls">
+
+                    <button class="btn-paginate" disabled><i data-feather="chevron-left"></i> Anterior</button>
+
+                    <button class="btn-paginate active">1</button>
+
+                    <button class="btn-paginate">2</button>
+
+                    <button class="btn-paginate">3</button>
+
+                    <span class="pagination-ellipsis">...</span>
+
+                    <button class="btn-paginate">124</button>
+
+                    <button class="btn-paginate">Siguiente <i data-feather="chevron-right"></i></button>
+
+                </div>
+
+            </div>
+
+
+
+        </main>
+
+    </div>
+
+
+
+    <script>
+
+        feather.replace();
+
+    </script>
+
+</body>
+
+</html>
+
