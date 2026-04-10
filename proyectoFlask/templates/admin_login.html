@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MACUIN — Panel de Administración</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="login-card admin-login-card">
+
+            <div class="login-header">
+                <div class="admin-badge">SUPERADMIN</div>
+                <h2>MACUIN</h2>
+                <p>Panel de Administración</p>
+            </div>
+
+            {% if error %}
+            <div class="alert-error">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                {{ error }}
+            </div>
+            {% endif %}
+
+            <form action="/admin/login" method="POST" class="login-form">
+
+                <div class="form-group">
+                    <label for="email">Correo del Superadministrador</label>
+                    <input type="email" id="email" name="email"
+                           placeholder="superadmin@macuin.com" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password"
+                           placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="btn-submit admin-btn-submit">
+                    Acceder al Panel
+                </button>
+
+            </form>
+
+            <div class="login-footer admin-login-footer">
+                <p>Acceso exclusivo para superadministradores.<br>
+                   Portal interno de MACUIN &mdash; uso restringido.</p>
+                <a href="/" class="admin-back-link">Volver al portal operativo</a>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

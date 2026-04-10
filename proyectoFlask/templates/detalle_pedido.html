@@ -1,436 +1,443 @@
-﻿<!DOCTYPE html>
-
+<!DOCTYPE html>
 <html lang="es">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>MACUIN - Detalle de Pedido {{ pedido.id }}</title>
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
     <script src="https://unpkg.com/feather-icons"></script>
-
-</head>
-
-<body class="dashboard-body">
-
-    <div class="dashboard-layout">
-
-        
-
-        <!-- Sidebar (Reutilizado) -->
-
-        <aside class="sidebar">
-
-            <div class="sidebar-header">
-
-                <h2>MACUIN</h2>
-
-                <span class="subtitle">Portal Interno</span>
-
-            </div>
-
-            <nav class="sidebar-nav">
-
-                <ul>
-
-                    <li>
-
-                        <a href="/inventario">
-
-                            <i data-feather="box"></i>
-
-                            Inventario / Autopartes
-
-                        </a>
-
-                    </li>
-
-                    <li>
-
-                        <a href="/almacen/actualizar">
-
-                            <i data-feather="repeat"></i>
-
-                            Actualización Rápida
-
-                        </a>
-
-                    </li>
-
-                    <li>
-
-                        <a href="/pedidos" class="active">
-
-                            <i data-feather="shopping-cart"></i>
-
-                            Pedidos
-
-                        </a>
-
-                    </li>
-
-                    <li>
-
-                        <a href="/reportes">
-
-                            <i data-feather="bar-chart-2"></i>
-
-                            Reportes
-
-                        </a>
-
-                    </li>
-
-                </ul>
-
-            </nav>
-
-            <div class="sidebar-footer">
-
-                <a href="/" class="logout-link">
-
-                    <i data-feather="log-out"></i>
-
-                    Cerrar Sesión
-
-                </a>
-
-            </div>
-
-        </aside>
-
-
-
-        <!-- Contenido Principal -->
-
-        <main class="main-content">
-
-            
-
-            <!-- Cabecera -->
-
-            <div class="margin-bottom-24">
-
-                <a href="/pedidos" class="back-link">
-
-                    <i data-feather="arrow-left" aria-hidden="true"></i>
-
-                    Volver al listado de pedidos
-
-                </a>
-
-            </div>
-
-
-
-            <header class="section-header flex-between mb-8">
-
-                <div>
-
-                    <h1 class="page-title">Pedido {{ pedido.id }}</h1>
-
-                    <p class="page-description">Creado el: {{ pedido.fecha_creacion }}</p>
-
-                </div>
-
-            </header>
-
-
-
-            <div class="details-grid">
-
-                <!-- Columna Izquierda: Información -->
-
-                <div class="details-main-col">
-
-                    
-
-                    <!-- Tarjeta: Información del Cliente -->
-
-                    <div class="data-card">
-
-                        <div class="card-header">
-
-                            <h3 class="card-title"><i data-feather="user" aria-hidden="true"></i> Información del Cliente</h3>
-
-                        </div>
-
-                        <div class="card-body client-info-grid">
-
-                            <div>
-
-                                <span class="label-text">Empresa / Nombre</span>
-
-                                <p class="value-text font-medium">{{ pedido.cliente.nombre }}</p>
-
-                            </div>
-
-                            <div>
-
-                                <span class="label-text">Contacto</span>
-
-                                <p class="value-text">{{ pedido.cliente.telefono }}<br>{{ pedido.cliente.email }}</p>
-
-                            </div>
-
-                            <div class="full-width-cell">
-
-                                <span class="label-text">Dirección de Envío</span>
-
-                                <p class="value-text">{{ pedido.cliente.direccion }}</p>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-
-                    <!-- Tarjeta: Lista de Artículos -->
-
-                    <div class="data-card">
-
-                        <div class="card-header">
-
-                            <h3 class="card-title"><i data-feather="list" aria-hidden="true"></i> Artículos del Pedido</h3>
-
-                        </div>
-
-                        <div class="card-body flush-body">
-
-                            <table class="data-table details-table">
-
-                                <thead>
-
-                                    <tr>
-
-                                        <th>Código</th>
-
-                                        <th>Nombre</th>
-
-                                        <th class="text-center">Cant.</th>
-
-                                        <th class="text-right">Precio Unit.</th>
-
-                                        <th class="text-right">Subtotal</th>
-
-                                    </tr>
-
-                                </thead>
-
-                                <tbody>
-
-                                    {% for item in pedido.articulos %}
-
-                                    <tr>
-
-                                        <td class="font-mono text-muted text-sm">{{ item.codigo }}</td>
-
-                                        <td class="font-medium">{{ item.nombre }}</td>
-
-                                        <td class="text-center">{{ item.cantidad }}</td>
-
-                                        <td class="text-right text-muted">${{ "%.2f"|format(item.precio_unitario) }}</td>
-
-                                        <td class="text-right font-medium">${{ "%.2f"|format(item.cantidad * item.precio_unitario) }}</td>
-
-                                    </tr>
-
-                                    {% endfor %}
-
-                                </tbody>
-
-                            </table>
-
-                        </div>
-
-                        
-
-                        <!-- Pie de Página: Resumen Financiero -->
-
-                        <div class="financial-summary">
-
-                            <div class="summary-row">
-
-                                <span class="summary-label">Subtotal</span>
-
-                                <span class="summary-value">${{ "%.2f"|format(pedido.finanzas.subtotal) }}</span>
-
-                            </div>
-
-                            <div class="summary-row">
-
-                                <span class="summary-label">Impuestos (16% IVA)</span>
-
-                                <span class="summary-value">${{ "%.2f"|format(pedido.finanzas.impuestos) }}</span>
-
-                            </div>
-
-                            <div class="summary-row total-row">
-
-                                <span class="summary-label">Total del Pedido</span>
-
-                                <span class="summary-value">${{ "%.2f"|format(pedido.finanzas.total) }}</span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-
-                </div>
-
-
-
-                <!-- Columna Derecha: Acciones / Status -->
-
-                <div class="details-side-col">
-
-                    
-
-                    <div class="data-card action-card">
-
-                        <div class="card-header">
-
-                            <h3 class="card-title"><i data-feather="activity" aria-hidden="true"></i> Gestión de Estatus</h3>
-
-                        </div>
-
-                        <div class="card-body">
-
-                            <p class="text-muted text-sm mb-4">Actualice el progreso logístico de esta orden. Esto notificará a la base de datos central.</p>
-
-                            
-
-                            <form action="{{ url_for('actualizar_estatus_pedido') }}" method="POST" class="status-form">
-
-                                <input type="hidden" name="pedido_id" value="{{ pedido.id }}">
-
-                                
-
-                                <label for="estatus_update" class="sr-only">Seleccionar nuevo estatus</label>
-
-                                <select id="estatus_update" name="estatus" class="semantic-status-select mb-4">
-
-                                    <!-- Options values correspond exactly to backend expectations -->
-
-                                    <option value="recibido" class="opt-recibido" {% if pedido.estatus == 'recibido' %}selected{% endif %}>
-
-                                        Recibido (Pendiente)
-
-                                    </option>
-
-                                    <option value="surtido" class="opt-surtido" {% if pedido.estatus == 'surtido' %}selected{% endif %}>
-
-                                        Surtido (En Almacén)
-
-                                    </option>
-
-                                    <option value="enviado" class="opt-enviado" {% if pedido.estatus == 'enviado' %}selected{% endif %}>
-
-                                        Enviado (En Tránsito)
-
-                                    </option>
-
-                                </select>
-
-
-
-                                <button type="submit" class="btn-primary w-full shadow-subtle">
-
-                                    <i data-feather="check-circle" aria-hidden="true"></i>
-
-                                    Actualizar Estatus
-
-                                </button>
-
-                            </form>
-
-                            
-
-                            <!-- Nota sutil para informar estado actual form -->
-
-                            <div class="current-status-note mt-6">
-
-                                <span class="text-xs text-muted block uppercase">Estatus Actual en Sistema:</span>
-
-                                <span class="font-bold text-sm block mt-1">
-
-                                    {% if pedido.estatus == 'recibido' %} Recibido {% elif pedido.estatus == 'surtido' %} Surtido {% else %} Enviado {% endif %}
-
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-
-                </div>
-
-            </div>
-
-
-
-        </main>
-
-    </div>
-
-
-
-    <script>
-
-        feather.replace();
-
-        
-
-        // Colorea sutilmente el select dependiendo de la opción escogida para dar feedback visual
-
-        const statusSelect = document.getElementById('estatus_update');
-
-        
-
-        function updateSelectColor() {
-
-            statusSelect.className = 'semantic-status-select mb-4'; // Reset classes
-
-            if(statusSelect.value === 'recibido') {
-
-                statusSelect.classList.add('bg-semantic-blue');
-
-            } else if(statusSelect.value === 'surtido') {
-
-                statusSelect.classList.add('bg-semantic-yellow');
-
-            } else if(statusSelect.value === 'enviado') {
-
-                statusSelect.classList.add('bg-semantic-green');
-
-            }
-
+    <style>
+        /* ── Layout del detalle ─────────────────── */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 1.5rem;
+            align-items: start;
+        }
+        @media (max-width: 900px) {
+            .detail-grid { grid-template-columns: 1fr; }
         }
 
+        /* ── Tarjetas ───────────────────────────── */
+        .detail-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .detail-card + .detail-card { margin-top: 1.25rem; }
+        .detail-card-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: rgba(255,255,255,0.55);
+        }
+        .detail-card-header svg { width: 16px; height: 16px; opacity: 0.6; }
+        .detail-card-body { padding: 1.25rem; }
 
+        /* ── Info grid ──────────────────────────── */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+        .info-grid .full { grid-column: 1 / -1; }
+        .info-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255,255,255,0.35);
+            margin-bottom: 0.35rem;
+        }
+        .info-value {
+            font-size: 0.92rem;
+            color: rgba(255,255,255,0.85);
+            line-height: 1.5;
+        }
 
-        statusSelect.addEventListener('change', updateSelectColor);
+        /* ── Tabla artículos ────────────────────── */
+        .items-table { width: 100%; border-collapse: collapse; }
+        .items-table th {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255,255,255,0.35);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .items-table td {
+            padding: 0.85rem 1rem;
+            font-size: 0.88rem;
+            color: rgba(255,255,255,0.75);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .items-table tr:last-child td { border-bottom: none; }
+        .items-table .col-right { text-align: right; }
+        .items-table .col-center { text-align: center; }
+        .items-table .font-bold { color: rgba(255,255,255,0.9); font-weight: 600; }
+        .items-table .font-mono { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: rgba(255,255,255,0.4); }
 
-        // Call on load
+        /* ── Resumen financiero ──────────────────── */
+        .finance-summary {
+            padding: 1rem 1.25rem;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .finance-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+        .finance-row .label { color: rgba(255,255,255,0.45); }
+        .finance-row .value { color: rgba(255,255,255,0.7); }
+        .finance-row.total {
+            padding-top: 0.65rem;
+            margin-top: 0.35rem;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .finance-row.total .label { color: rgba(255,255,255,0.7); font-weight: 600; }
+        .finance-row.total .value { color: #fff; font-size: 1.05rem; font-weight: 700; }
 
-        updateSelectColor();
+        /* ── Panel de estatus (SIDEBAR) ──────────── */
+        .status-panel {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .status-panel-header {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: rgba(255,255,255,0.55);
+        }
+        .status-panel-header svg { width: 16px; height: 16px; opacity: 0.6; }
+        .status-panel-body { padding: 1.25rem; }
 
+        /* Estatus actual con badge grande */
+        .current-status-block {
+            text-align: center;
+            padding: 1rem 0 1.25rem;
+        }
+        .current-status-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: rgba(255,255,255,0.3);
+            margin-bottom: 0.6rem;
+        }
+        .current-status-badge {
+            display: inline-block;
+            padding: 0.5rem 1.25rem;
+            border-radius: 25px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .badge-pendiente  { background: rgba(234,179,8,0.12); color: #eab308; border: 1px solid rgba(234,179,8,0.3); }
+        .badge-surtido    { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); }
+        .badge-enviado    { background: rgba(139,92,246,0.12); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3); }
+        .badge-entregado  { background: rgba(34,197,94,0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+        .badge-cancelado  { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+
+        /* Timeline visual */
+        .status-timeline {
+            margin: 1.25rem 0;
+            position: relative;
+        }
+        .timeline-track {
+            position: absolute;
+            left: 13px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: rgba(255,255,255,0.06);
+            transform: translateX(-50%);
+        }
+        .timeline-step {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            position: relative;
+        }
+        .timeline-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.15);
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+            margin-left: 3px;
+        }
+        .timeline-dot.done { background: rgba(34,197,94,0.6); border-color: rgba(34,197,94,0.8); }
+        .timeline-dot.active { background: rgba(233,48,42,0.7); border-color: rgba(233,48,42,1); box-shadow: 0 0 8px rgba(233,48,42,0.4); }
+        .timeline-text {
+            font-size: 0.82rem;
+            color: rgba(255,255,255,0.35);
+        }
+        .timeline-text.done { color: rgba(255,255,255,0.55); }
+        .timeline-text.active { color: rgba(255,255,255,0.85); font-weight: 600; }
+
+        /* Separador */
+        .status-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.06);
+            margin: 1rem 0;
+        }
+
+        /* Form de actualización */
+        .update-form-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255,255,255,0.35);
+            margin-bottom: 0.5rem;
+        }
+        .status-select {
+            width: 100%;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #e0d6da;
+            padding: 0.6rem 0.85rem;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-bottom: 0.85rem;
+            appearance: auto;
+        }
+        .status-select:focus { outline: none; border-color: rgba(233,48,42,0.5); }
+        .btn-update-status {
+            width: 100%;
+            padding: 0.7rem;
+            background: linear-gradient(135deg, #e9302a, #b91c1c);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        .btn-update-status:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(233,48,42,0.35); }
+        .btn-update-status svg { width: 16px; height: 16px; }
+    </style>
+</head>
+<body class="dashboard-body">
+    <div class="dashboard-layout">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>MACUIN</h2>
+                <span class="subtitle">Portal Interno</span>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="/inventario"><i data-feather="box"></i> Inventario / Autopartes</a></li>
+                    <li><a href="/pedidos" class="active"><i data-feather="shopping-cart"></i> Pedidos</a></li>
+                    <li><a href="/reportes"><i data-feather="bar-chart-2"></i> Reportes</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="/" class="logout-link"><i data-feather="log-out"></i> Cerrar Sesión</a>
+            </div>
+        </aside>
+
+        <!-- Contenido Principal -->
+        <main class="main-content">
+
+            <a href="/pedidos" class="back-link" style="margin-bottom:1rem; display:inline-flex;">
+                <i data-feather="arrow-left"></i> Volver al listado de pedidos
+            </a>
+
+            <header class="section-header" style="margin-bottom:1.5rem;">
+                <div>
+                    <h1 class="page-title">Pedido {{ pedido.id }}</h1>
+                    <p class="page-description">Creado el: {{ pedido.fecha_creacion[:10] if pedido.fecha_creacion else '' }}</p>
+                </div>
+            </header>
+
+            <div class="detail-grid">
+
+                <!-- ═══ COLUMNA IZQUIERDA ═══ -->
+                <div>
+
+                    <!-- Información del Cliente -->
+                    <div class="detail-card">
+                        <div class="detail-card-header">
+                            <i data-feather="user"></i> Información del Cliente
+                        </div>
+                        <div class="detail-card-body">
+                            <div class="info-grid">
+                                <div>
+                                    <div class="info-label">Nombre</div>
+                                    <div class="info-value">{{ pedido.cliente.nombre or '—' }}</div>
+                                </div>
+                                <div>
+                                    <div class="info-label">Email</div>
+                                    <div class="info-value">{{ pedido.cliente.email or '—' }}</div>
+                                </div>
+                                <div class="full">
+                                    <div class="info-label">Dirección de Envío</div>
+                                    <div class="info-value">{{ pedido.cliente.direccion or 'Sin dirección registrada' }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Artículos del Pedido -->
+                    <div class="detail-card">
+                        <div class="detail-card-header">
+                            <i data-feather="package"></i> Artículos del Pedido
+                        </div>
+                        <div style="padding:0;">
+                            <table class="items-table">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Producto</th>
+                                        <th class="col-center">Cant.</th>
+                                        <th class="col-right">Precio Unit.</th>
+                                        <th class="col-right">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in pedido.articulos %}
+                                    <tr>
+                                        <td class="font-mono">{{ item.codigo }}</td>
+                                        <td>{{ item.nombre }}</td>
+                                        <td class="col-center">{{ item.cantidad }}</td>
+                                        <td class="col-right">${{ "%.2f"|format(item.precio_unitario) }}</td>
+                                        <td class="col-right font-bold">${{ "%.2f"|format(item.cantidad * item.precio_unitario) }}</td>
+                                    </tr>
+                                    {% else %}
+                                    <tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,0.3);padding:2rem;">Sin artículos</td></tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="finance-summary">
+                            <div class="finance-row">
+                                <span class="label">Subtotal</span>
+                                <span class="value">${{ "%.2f"|format(pedido.finanzas.subtotal) }}</span>
+                            </div>
+                            <div class="finance-row">
+                                <span class="label">Impuestos (16% IVA)</span>
+                                <span class="value">${{ "%.2f"|format(pedido.finanzas.impuestos) }}</span>
+                            </div>
+                            <div class="finance-row total">
+                                <span class="label">Total del Pedido</span>
+                                <span class="value">${{ "%.2f"|format(pedido.finanzas.total) }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ═══ COLUMNA DERECHA (PANEL DE ESTATUS) ═══ -->
+                <div>
+                    <div class="status-panel">
+                        <div class="status-panel-header">
+                            <i data-feather="activity"></i> Gestión de Estatus
+                        </div>
+                        <div class="status-panel-body">
+
+                            <!-- Estatus actual con badge -->
+                            <div class="current-status-block">
+                                <div class="current-status-label">Estatus actual</div>
+                                {% set est = pedido.estatus|lower %}
+                                {% if est == 'pendiente' %}
+                                <span class="current-status-badge badge-pendiente">Pendiente</span>
+                                {% elif est == 'surtido' %}
+                                <span class="current-status-badge badge-surtido">Surtido</span>
+                                {% elif est == 'enviado' %}
+                                <span class="current-status-badge badge-enviado">Enviado</span>
+                                {% elif est == 'entregado' %}
+                                <span class="current-status-badge badge-entregado">Entregado</span>
+                                {% elif est == 'cancelado' %}
+                                <span class="current-status-badge badge-cancelado">Cancelado</span>
+                                {% else %}
+                                <span class="current-status-badge badge-pendiente">{{ pedido.estatus }}</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Timeline visual -->
+                            <div class="status-timeline">
+                                <div class="timeline-track"></div>
+                                {% set steps = ['pendiente', 'surtido', 'enviado', 'entregado'] %}
+                                {% set step_labels = {'pendiente': 'Pendiente', 'surtido': 'Surtido en Almacén', 'enviado': 'Enviado', 'entregado': 'Entregado'} %}
+                                {% set step_map = {'pendiente': 0, 'surtido': 1, 'enviado': 2, 'entregado': 3, 'cancelado': -1} %}
+                                {% set current_idx = step_map.get(est, 0) %}
+                                {% for step in steps %}
+                                {% set idx = loop.index0 %}
+                                <div class="timeline-step">
+                                    <div class="timeline-dot {% if est == 'cancelado' %}{% elif idx < current_idx %}done{% elif idx == current_idx %}active{% endif %}"></div>
+                                    <span class="timeline-text {% if est == 'cancelado' %}{% elif idx < current_idx %}done{% elif idx == current_idx %}active{% endif %}">
+                                        {{ step_labels[step] }}
+                                    </span>
+                                </div>
+                                {% endfor %}
+                                {% if est == 'cancelado' %}
+                                <div class="timeline-step">
+                                    <div class="timeline-dot" style="background:rgba(239,68,68,0.7);border-color:#f87171;"></div>
+                                    <span class="timeline-text" style="color:#f87171;font-weight:600;">Cancelado</span>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="status-divider"></div>
+
+                            <!-- Formulario de actualización -->
+                            <form action="{{ url_for('actualizar_estatus_pedido') }}" method="POST">
+                                <input type="hidden" name="pedido_id" value="{{ pedido.id }}">
+                                <div class="update-form-label">Cambiar estatus a:</div>
+                                <select name="estatus" class="status-select" id="statusSelect">
+                                    <option value="pendiente" {% if est == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                                    <option value="surtido" {% if est == 'surtido' %}selected{% endif %}>Surtido en Almacén</option>
+                                    <option value="enviado" {% if est == 'enviado' %}selected{% endif %}>Enviado</option>
+                                    <option value="entregado" {% if est == 'entregado' %}selected{% endif %}>Entregado</option>
+                                    <option value="cancelado" {% if est == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                                </select>
+                                <button type="submit" class="btn-update-status">
+                                    <i data-feather="refresh-cw"></i> Actualizar Estatus
+                                </button>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        feather.replace();
     </script>
-
 </body>
-
 </html>
-

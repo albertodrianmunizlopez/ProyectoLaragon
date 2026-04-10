@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MACUIN — Editar Usuario</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+
+<body class="dashboard-body">
+
+    <div class="dashboard-layout">
+
+        <!-- Sidebar superadmin -->
+        <aside class="sidebar superadmin-sidebar">
+            <div class="sidebar-header">
+                <h2>MACUIN</h2>
+                <span class="subtitle admin-subtitle">Superadministrador</span>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="/admin">
+                            <i data-feather="home"></i> Inicio
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/usuarios" class="active">
+                            <i data-feather="users"></i> Gestión de Usuarios
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="/admin/login" class="logout-link">
+                    <i data-feather="log-out"></i> Cerrar Sesión
+                </a>
+            </div>
+        </aside>
+
+        <!-- Contenido -->
+        <main class="main-content form-view-content">
+
+            <div class="form-container">
+
+                <!-- Volver -->
+                <a href="/admin/usuarios" class="back-link">
+                    <i data-feather="arrow-left"></i> Volver a Usuarios
+                </a>
+
+                <!-- Encabezado -->
+                <header class="section-header" style="margin-bottom:28px;">
+                    <div>
+                        <h1 class="page-title">Editar Usuario</h1>
+                        <p class="page-description">Modifica los datos del usuario ID #{{ usuario.id }}</p>
+                    </div>
+                    <!-- Avatar grande -->
+                    <div class="edit-avatar">{{ usuario.nombre[0] | upper }}</div>
+                </header>
+
+                <!-- Formulario de edición -->
+                <form action="/admin/usuarios/editar/{{ usuario.id }}" method="POST" class="form-card" id="form-editar">
+
+                    <!-- Sección: Datos Personales -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <i data-feather="user"></i> Datos Personales
+                        </h3>
+                        <div class="form-grid-2">
+
+                            <div class="form-group">
+                                <label for="nombre" class="form-label">Nombre completo</label>
+                                <input type="text" id="nombre" name="nombre"
+                                       value="{{ usuario.nombre }}"
+                                       placeholder="Nombre del usuario" required
+                                       class="form-input-field">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email" class="form-label">Correo electrónico</label>
+                                <input type="email" id="email" name="email"
+                                       value="{{ usuario.email }}"
+                                       placeholder="correo@ejemplo.com" required
+                                       class="form-input-field">
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Separador -->
+                    <div class="form-divider"></div>
+
+                    <!-- Sección: Acceso y Permisos -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <i data-feather="shield"></i> Acceso y Permisos
+                        </h3>
+                        <div class="form-grid-2">
+
+                            <div class="form-group">
+                                <label for="rol" class="form-label">Rol del usuario</label>
+                                <select id="rol" name="rol" class="form-input-field">
+                                    <option value="superadmin" {% if usuario.rol == 'superadmin' %}selected{% endif %}>
+                                        Superadministrador
+                                    </option>
+                                    <option value="admin"   {% if usuario.rol == 'admin'   %}selected{% endif %}>
+                                        Administrador (portal de inventario)
+                                    </option>
+                                    <option value="cliente" {% if usuario.rol == 'cliente' %}selected{% endif %}>
+                                        Cliente (tienda Laravel)
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Estado de la cuenta</label>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="activo" id="activo"
+                                           {% if usuario.activo %}checked{% endif %}>
+                                    <span class="toggle-track">
+                                        <span class="toggle-thumb"></span>
+                                    </span>
+                                    <span class="toggle-label" id="toggle-text">
+                                        {% if usuario.activo %}Cuenta Activa{% else %}Cuenta Inactiva{% endif %}
+                                    </span>
+                                </label>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Separador -->
+                    <div class="form-divider"></div>
+
+                    <!-- Sección: Seguridad -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <i data-feather="lock"></i> Seguridad
+                        </h3>
+
+                        <div class="form-grid-2">
+
+                            <div class="form-group">
+                                <label class="form-label">Contraseña actual</label>
+                                <div class="readonly-field" style="display:flex;align-items:center;gap:8px;">
+                                    <i data-feather="key" style="width:16px;height:16px;opacity:0.4;"></i>
+                                    <span style="font-size:0.9rem;color:rgba(255,255,255,0.7);font-family:monospace;">{{ usuario.password_plain or 'No registrada' }}</span>
+                                    <span style="font-size:0.65rem;color:rgba(233,48,42,0.6);margin-left:auto;text-transform:uppercase;letter-spacing:0.06em;">Protegida con Pydantic</span>
+                                </div>
+                                <span class="form-hint">Contraseña protegida con Pydantic.</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="password" class="form-label">Nueva contraseña</label>
+                                <div class="password-field-wrapper">
+                                    <input type="password" id="password" name="password"
+                                           placeholder="Dejar vacío para no cambiar"
+                                           class="form-input-field"
+                                           autocomplete="new-password">
+                                    <button type="button" class="btn-toggle-pw" onclick="togglePassword()" title="Mostrar/ocultar contraseña">
+                                        <i data-feather="eye" id="pw-icon"></i>
+                                    </button>
+                                </div>
+                                <span class="form-hint">Solo rellena este campo si deseas cambiar la contraseña actual.</span>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Separador -->
+                    <div class="form-divider"></div>
+
+                    <!-- Sección: Información del Sistema -->
+                    <div class="form-section">
+                        <h3 class="form-section-title">
+                            <i data-feather="info"></i> Información del Sistema
+                        </h3>
+                        <div class="form-grid-2">
+
+                            <div class="form-group">
+                                <label class="form-label">Fecha de alta</label>
+                                <div class="readonly-field">
+                                    <i data-feather="calendar"></i>
+                                    {{ usuario.fecha_alta }}
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Última modificación</label>
+                                <div class="readonly-field">
+                                    <i data-feather="clock"></i>
+                                    {{ usuario.updated_at or 'No disponible' }}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="form-actions">
+                        <a href="/admin/usuarios" class="btn-secondary">
+                            <i data-feather="x"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn-primary" id="btn-guardar">
+                            <i data-feather="save"></i> Guardar Cambios
+                        </button>
+                    </div>
+
+                </form>
+
+                <!-- Zona de peligro: Eliminar usuario -->
+                <div class="danger-zone">
+                    <div class="danger-zone-header">
+                        <i data-feather="alert-triangle"></i>
+                        <div>
+                            <h4 class="danger-zone-title">Zona de Peligro</h4>
+                            <p class="danger-zone-desc">La eliminación es permanente y no puede deshacerse.</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-danger" onclick="confirmarEliminar()">
+                        <i data-feather="trash-2"></i> Eliminar Usuario
+                    </button>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Modal: Confirmar eliminación -->
+    <div id="modalEliminar" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="max-width:440px;">
+            <div class="modal-header">
+                <h3>Confirmar Eliminación</h3>
+                <button class="modal-close" onclick="cancelarEliminar()">
+                    <i data-feather="x"></i>
+                </button>
+            </div>
+            <div class="modal-danger-body">
+                <div class="modal-danger-icon">
+                    <i data-feather="alert-triangle"></i>
+                </div>
+                <p>¿Estás seguro de que deseas eliminar al usuario <strong>{{ usuario.nombre }}</strong>?</p>
+                <p class="modal-danger-note">Esta acción es permanente. El usuario perderá acceso inmediatamente.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="cancelarEliminar()">Cancelar</button>
+                <form action="/admin/usuarios/eliminar/{{ usuario.id }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn-danger">
+                        <i data-feather="trash-2"></i> Sí, Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        feather.replace();
+
+        // Toggle password visibility
+        function togglePassword() {
+            const input = document.getElementById('password');
+            const icon  = document.getElementById('pw-icon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.setAttribute('data-feather', 'eye-off');
+            } else {
+                input.type = 'password';
+                icon.setAttribute('data-feather', 'eye');
+            }
+            feather.replace();
+        }
+
+        // Toggle switch label
+        const toggleInput = document.getElementById('activo');
+        const toggleText  = document.getElementById('toggle-text');
+        toggleInput.addEventListener('change', () => {
+            toggleText.textContent = toggleInput.checked ? 'Cuenta Activa' : 'Cuenta Inactiva';
+        });
+
+        // Modal eliminar
+        function confirmarEliminar() {
+            document.getElementById('modalEliminar').style.display = 'flex';
+        }
+        function cancelarEliminar() {
+            document.getElementById('modalEliminar').style.display = 'none';
+        }
+        document.getElementById('modalEliminar').addEventListener('click', function(e) {
+            if (e.target === this) cancelarEliminar();
+        });
+    </script>
+
+</body>
+
+</html>

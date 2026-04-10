@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MACUIN — Panel Superadmin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+
+<body class="dashboard-body">
+
+    <div class="dashboard-layout">
+
+        <!-- Sidebar exclusivo del Superadmin -->
+        <aside class="sidebar superadmin-sidebar">
+            <div class="sidebar-header">
+                <h2>MACUIN</h2>
+                <span class="subtitle admin-subtitle">Superadministrador</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="/admin" class="active">
+                            <i data-feather="home"></i> Inicio
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/usuarios">
+                            <i data-feather="users"></i> Gestión de Usuarios
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="/admin/login" class="logout-link">
+                    <i data-feather="log-out"></i> Cerrar Sesión
+                </a>
+            </div>
+        </aside>
+
+        <!-- Contenido Principal -->
+        <main class="main-content">
+
+            <header class="section-header">
+                <div>
+                    <h1 class="page-title">Panel de Superadministrador</h1>
+                    <p class="page-description">Resumen general del sistema de usuarios.</p>
+                </div>
+            </header>
+
+            <!-- Tarjetas de Estadísticas -->
+            <div class="superadmin-stats-grid">
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-total">
+                        <i data-feather="users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ stats.total }}</span>
+                        <span class="stat-label">Usuarios Totales</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-admin">
+                        <i data-feather="shield"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ stats.admins }}</span>
+                        <span class="stat-label">Administradores</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-cliente">
+                        <i data-feather="shopping-bag"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ stats.clientes }}</span>
+                        <span class="stat-label">Clientes Laravel</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon stat-icon-activo">
+                        <i data-feather="check-circle"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ stats.activos }}</span>
+                        <span class="stat-label">Cuentas Activas</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Acceso rápido -->
+            <div class="superadmin-quick">
+                <h2 class="page-title" style="margin-bottom:16px;">Acceso Rápido</h2>
+                <a href="/admin/usuarios" class="quick-card">
+                    <div class="quick-card-icon"><i data-feather="users"></i></div>
+                    <div>
+                        <div class="quick-card-title">Gestionar Usuarios</div>
+                        <div class="quick-card-sub">Crear, editar y cambiar roles de usuarios</div>
+                    </div>
+                    <i data-feather="chevron-right" class="quick-card-arrow"></i>
+                </a>
+            </div>
+
+        </main>
+    </div>
+
+    <script>feather.replace();</script>
+
+</body>
+
+</html>

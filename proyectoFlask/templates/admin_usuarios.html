@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MACUIN — Gestión de Usuarios</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+
+<body class="dashboard-body">
+
+    <div class="dashboard-layout">
+
+        <!-- ── Sidebar exclusivo del Superadmin ── -->
+        <aside class="sidebar superadmin-sidebar">
+            <div class="sidebar-header">
+                <h2>MACUIN</h2>
+                <span class="subtitle admin-subtitle">Superadministrador</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="/admin">
+                            <i data-feather="home"></i> Inicio
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/admin/usuarios" class="active">
+                            <i data-feather="users"></i> Gestión de Usuarios
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="/admin/login" class="logout-link">
+                    <i data-feather="log-out"></i> Cerrar Sesión
+                </a>
+            </div>
+        </aside>
+
+        <!-- ── Contenido Principal ── -->
+        <main class="main-content">
+
+            {% if mensaje %}
+            <div class="feedback-banner feedback-{{ mensaje }}" id="feedback-banner">
+                {% if mensaje == 'editado' %}
+                    <i data-feather="check-circle"></i> Usuario actualizado correctamente.
+                {% elif mensaje == 'creado' %}
+                    <i data-feather="user-check"></i> Usuario creado correctamente.
+                {% elif mensaje == 'eliminado' %}
+                    <i data-feather="trash-2"></i> Usuario eliminado correctamente.
+                {% elif mensaje == 'email_duplicado' %}
+                    <i data-feather="alert-circle"></i> Error: ese correo electrónico ya está registrado.
+                {% endif %}
+                <button class="feedback-close" onclick="document.getElementById('feedback-banner').remove()">&times;</button>
+            </div>
+            {% endif %}
+
+            <header class="section-header" style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                    <h1 class="page-title">Gestión de Usuarios</h1>
+                    <p class="page-description">Administra cuentas de administradores del portal operativo y clientes de
+                        la tienda.</p>
+                </div>
+                <button class="btn-primary" onclick="abrirModalNuevo()">
+                    <i data-feather="user-plus"></i> Nuevo Usuario
+                </button>
+            </header>
+
+            <!-- Tabs de Filtrado -->
+            <div class="tab-filter">
+                <a href="/admin/usuarios?filtro=todos" class="tab-btn {% if filtro == 'todos' %}active{% endif %}">
+                    Todos
+                    <span class="tab-count">{{ totales.todos }}</span>
+                </a>
+                <a href="/admin/usuarios?filtro=superadmin" class="tab-btn {% if filtro == 'superadmin' %}active{% endif %}">
+                    <i data-feather="star"></i> Superadmins
+                    <span class="tab-count" style="background:rgba(233,48,42,0.3); color:#ff6b6b;">{{ totales.superadmin }}</span>
+                </a>
+                <a href="/admin/usuarios?filtro=admin" class="tab-btn {% if filtro == 'admin' %}active{% endif %}">
+                    <i data-feather="shield"></i> Administradores
+                    <span class="tab-count admin-count">{{ totales.admin }}</span>
+                </a>
+                <a href="/admin/usuarios?filtro=cliente" class="tab-btn {% if filtro == 'cliente' %}active{% endif %}">
+                    <i data-feather="user"></i> Clientes Laravel
+                    <span class="tab-count cliente-count">{{ totales.cliente }}</span>
+                </a>
+            </div>
+
+            <!-- Tabla de Usuarios -->
+            <section class="table-container" style="margin-top:20px;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Correo</th>
+                            <th>Rol</th>
+                            <th>Fecha de Alta</th>
+                            <th>Estado</th>
+                            <th class="actions-col">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in usuarios %}
+                        <tr>
+                            <td class="font-medium">
+                                <div class="user-avatar-row">
+                                    <div class="user-avatar">{{ u.nombre[0] }}</div>
+                                    {{ u.nombre }}
+                                </div>
+                            </td>
+                            <td class="text-muted font-mono">{{ u.email }}</td>
+                            <td>
+                                {% if u.rol == 'superadmin' %}
+                                <span class="badge-rol badge-admin" style="background:rgba(233,48,42,0.25); color:#ff6b6b; border-color:rgba(233,48,42,0.5);">Superadmin</span>
+                                {% elif u.rol == 'admin' %}
+                                <span class="badge-rol badge-admin">Administrador</span>
+                                {% else %}
+                                <span class="badge-rol badge-cliente">Cliente Laravel</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted">{{ u.fecha_alta }}</td>
+                            <td>
+                                {% if u.activo %}
+                                <span class="badge-estado badge-activo">Activo</span>
+                                {% else %}
+                                <span class="badge-estado badge-inactivo">Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td class="actions-col">
+                                <div class="actions-cell">
+                                    <!-- Editar -->
+                                    <a href="/admin/usuarios/editar/{{ u.id }}" class="btn-icon" title="Editar usuario">
+                                        <i data-feather="edit-2"></i>
+                                    </a>
+                                    <!-- Cambiar rol -->
+                                    <button class="btn-icon" title="Cambiar rol"
+                                        onclick="abrirModalRol({{ u.id }}, '{{ u.nombre }}', '{{ u.rol }}')">
+                                        <i data-feather="refresh-cw"></i>
+                                    </button>
+                                    <!-- Toggle estado -->
+                                    <form action="/admin/usuarios/toggle-estado" method="POST" style="display:contents;">
+                                        <input type="hidden" name="usuario_id" value="{{ u.id }}">
+                                        <button type="submit" class="btn-icon"
+                                            title="{% if u.activo %}Desactivar{% else %}Activar{% endif %}"
+                                            style="{% if u.activo %}color:#f87171;{% else %}color:#4ade80;{% endif %}">
+                                            <i data-feather="{% if u.activo %}user-x{% else %}user-check{% endif %}"></i>
+                                        </button>
+                                    </form>
+                                    <!-- Eliminar -->
+                                    <button class="btn-icon" title="Eliminar usuario"
+                                        style="color:#f87171;"
+                                        onclick="confirmarEliminar({{ u.id }}, '{{ u.nombre }}')">
+                                        <i data-feather="trash-2"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="empty-state">No se encontraron usuarios con ese filtro.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+
+            <div class="pagination-container">
+                <span class="pagination-info">
+                    Mostrando {{ usuarios|length }} de {{ totales.todos }} usuarios registrados
+                </span>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Modal: Nuevo Usuario -->
+    <div id="modalNuevo" class="modal-overlay" style="display:none;">
+        <div class="modal-content modal-form">
+            <div class="modal-header">
+                <h3>Nuevo Usuario</h3>
+                <button class="modal-close" onclick="cerrarModalNuevo()">
+                    <i data-feather="x"></i>
+                </button>
+            </div>
+            <form action="/admin/usuarios/nuevo" method="POST" id="formNuevo" onsubmit="return validarFormNuevo()">
+                <div class="form-grid-2" style="gap:12px; margin-bottom:16px;">
+                    <div class="form-group">
+                        <label for="nuevo-nombre">Nombre(s)</label>
+                        <input type="text" id="nuevo-nombre" name="nombre" placeholder="Ej: Carlos"
+                               pattern="^[A-Za-záéíóúñÁÉÍÓÚÑüÜ\s]+$" title="Solo se permiten letras"
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nuevo-apellidos">Apellidos</label>
+                        <input type="text" id="nuevo-apellidos" name="apellidos" placeholder="Ej: Herrera Mendoza"
+                               pattern="^[A-Za-záéíóúñÁÉÍÓÚÑüÜ\s]+$" title="Solo se permiten letras"
+                               required>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label for="nuevo-email">Correo electrónico</label>
+                    <input type="email" id="nuevo-email" name="email" placeholder="correo@ejemplo.com" required
+                           onblur="verificarEmail(this.value)">
+                    <span id="email-error" style="display:none; color:#ff6b6b; font-size:0.8rem; margin-top:4px;">
+                        Este correo ya está registrado en el sistema.
+                    </span>
+                </div>
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label for="nuevo-rol">Rol</label>
+                    <select id="nuevo-rol" name="rol" required>
+                        <option value="">Selecciona un rol...</option>
+                        <option value="superadmin">Superadministrador</option>
+                        <option value="admin">Administrador (portal de inventario)</option>
+                        <option value="cliente">Cliente (tienda Laravel)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-bottom:24px;">
+                    <label for="nuevo-password">Contraseña inicial</label>
+                    <input type="password" id="nuevo-password" name="password" placeholder="Mínimo 6 caracteres"
+                        minlength="6" required>
+                </div>
+                <div class="form-actions" style="margin-top:0; padding-top:16px;">
+                    <button type="button" class="btn-secondary" onclick="cerrarModalNuevo()">Cancelar</button>
+                    <button type="submit" class="btn-primary" id="btnCrear">Crear Usuario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Cambiar Rol -->
+    <div id="modalRol" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="max-width:420px;">
+            <h3 style="margin-top:0; margin-bottom:8px;">Cambiar Rol</h3>
+            <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">
+                Cambiando el rol de <strong id="rolNombreUsuario"></strong>.
+            </p>
+            <form action="/admin/usuarios/cambiar-rol" method="POST">
+                <input type="hidden" name="usuario_id" id="rolUsuarioId">
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label>Nuevo Rol</label>
+                    <select name="nuevo_rol" id="selectNuevoRol" required>
+                        <option value="superadmin">Superadministrador</option>
+                        <option value="admin">Administrador (portal de inventario)</option>
+                        <option value="cliente">Cliente (tienda Laravel)</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:12px; justify-content:flex-end;">
+                    <button type="button" class="btn-secondary" onclick="cerrarModalRol()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Confirmar Cambio</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Eliminar Usuario -->
+    <div id="modalEliminar" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="max-width:440px;">
+            <div class="modal-header">
+                <h3>Eliminar Usuario</h3>
+                <button class="modal-close" onclick="document.getElementById('modalEliminar').style.display='none'">
+                    <i data-feather="x"></i>
+                </button>
+            </div>
+            <div class="modal-danger-body">
+                <div class="modal-danger-icon">
+                    <i data-feather="alert-triangle"></i>
+                </div>
+                <p>¿Estas seguro de eliminar a <strong id="eliminarNombre"></strong>?</p>
+                <p class="modal-danger-note">Esta acción es permanente y no puede deshacerse.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="document.getElementById('modalEliminar').style.display='none'">Cancelar</button>
+                <form id="formEliminar" action="" method="POST" style="display:inline;">
+                    <button type="submit" class="btn-danger">
+                        <i data-feather="trash-2"></i> Sí, Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        feather.replace();
+
+        function abrirModalNuevo() { document.getElementById('modalNuevo').style.display = 'flex'; }
+        function cerrarModalNuevo() { document.getElementById('modalNuevo').style.display = 'none'; }
+
+        function abrirModalRol(id, nombre, rolActual) {
+            document.getElementById('rolUsuarioId').value = id;
+            document.getElementById('rolNombreUsuario').innerText = nombre;
+            document.getElementById('selectNuevoRol').value = rolActual === 'admin' ? 'cliente' : 'admin';
+            document.getElementById('modalRol').style.display = 'flex';
+        }
+        function cerrarModalRol() { document.getElementById('modalRol').style.display = 'none'; }
+
+        function confirmarEliminar(id, nombre) {
+            document.getElementById('eliminarNombre').textContent = nombre;
+            document.getElementById('formEliminar').action = '/admin/usuarios/eliminar/' + id;
+            document.getElementById('modalEliminar').style.display = 'flex';
+            feather.replace();
+        }
+
+        // Auto-ocultar banner de feedback tras 4 s
+        const banner = document.getElementById('feedback-banner');
+        if (banner) setTimeout(() => banner.remove(), 4000);
+
+        document.querySelectorAll('.modal-overlay').forEach(o => {
+            o.addEventListener('click', e => { if (e.target === o) o.style.display = 'none'; });
+        });
+
+        /* ── Verificación de email duplicado ── */
+        let emailDuplicado = false;
+        async function verificarEmail(email) {
+            const errorSpan = document.getElementById('email-error');
+            const btn = document.getElementById('btnCrear');
+            if (!email || !email.includes('@')) { errorSpan.style.display = 'none'; return; }
+            try {
+                const resp = await fetch('/admin/api/check-email?email=' + encodeURIComponent(email));
+                const data = await resp.json();
+                if (data.exists) {
+                    errorSpan.style.display = 'block';
+                    emailDuplicado = true;
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                } else {
+                    errorSpan.style.display = 'none';
+                    emailDuplicado = false;
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }
+            } catch(e) { errorSpan.style.display = 'none'; }
+        }
+
+        /* ── Validación del formulario ── */
+        function validarFormNuevo() {
+            const nombre = document.getElementById('nuevo-nombre').value;
+            const apellidos = document.getElementById('nuevo-apellidos').value;
+            const letrasRegex = /^[A-Za-záéíóúñÁÉÍÓÚÑüÜ\s]+$/;
+            if (!letrasRegex.test(nombre)) {
+                alert('El nombre solo puede contener letras.');
+                return false;
+            }
+            if (!letrasRegex.test(apellidos)) {
+                alert('Los apellidos solo pueden contener letras.');
+                return false;
+            }
+            if (emailDuplicado) {
+                alert('El correo ya está registrado. Usa otro.');
+                return false;
+            }
+            return true;
+        }
+    </script>
+
+</body>
+
+</html>

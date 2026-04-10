@@ -2,30 +2,48 @@
 
 @section('contenido')
 
-<div class="flex justify-center mt-20">
-    <div class="bg-white p-8 rounded-xl shadow-lg w-96">
-        <h2 class="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h2>
+<div class="auth-wrap">
+    <div class="auth-card">
+        <div class="auth-brand">MACUIN Autopartes</div>
 
-        <form>
-            <div class="mb-4">
-                <label>Correo</label>
-                <input type="email" class="w-full border rounded-lg px-3 py-2">
+        <h2>Bienvenido</h2>
+        <p class="auth-subtitle">Ingresa tus credenciales para continuar</p>
+
+        @if(session('error'))
+            <div style="background:rgba(255,60,60,.15); border:1px solid rgba(255,60,60,.4); color:#ff6b6b; padding:0.75rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:0.9rem;">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        @if(session('success'))
+            <div style="background:rgba(60,255,60,.15); border:1px solid rgba(60,255,60,.4); color:#6bff6b; padding:0.75rem 1rem; border-radius:8px; margin-bottom:1rem; font-size:0.9rem;">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <form method="POST" action="/login">
+            @csrf
+            <div class="form-group">
+                <label class="form-label">Correo electrónico</label>
+                <input type="email" name="email" class="form-input" placeholder="correo@ejemplo.com" required>
             </div>
 
-            <div class="mb-4">
-                <label>Contraseña</label>
-                <input type="password" class="w-full border rounded-lg px-3 py-2">
+            <div class="form-group">
+                <label class="form-label">Contraseña</label>
+                <input type="password" name="password" class="form-input" placeholder="••••••••" required>
             </div>
 
-            <button class="w-full bg-blue-600 text-white py-2 rounded-lg">
-                Ingresar
-            </button>
+            <div style="margin-top:1.75rem;">
+                <button type="submit" class="btn-primary" style="width:100%; justify-content:center; padding:0.85rem;">
+                    Iniciar sesión
+                </button>
+            </div>
         </form>
 
-        <p class="text-sm mt-4 text-center">
+        <div class="auth-footer">
             ¿No tienes cuenta?
-            <a href="/registro" class="text-blue-600">Regístrate</a>
-        </p>
+            <a href="/registro" class="form-link">Regístrate gratis</a>
+        </div>
     </div>
 </div>
 

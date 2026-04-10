@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MACUIN - Crear Reporte</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://unpkg.com/feather-icons"></script>
+    <style>
+        .back-link { display: inline-flex; align-items: center; gap: 6px; color: rgba(255,255,255,0.5); text-decoration: none; font-size: 0.85rem; margin-bottom: 1rem; transition: color 0.2s; }
+        .back-link:hover { color: rgba(255,255,255,0.8); }
+        .back-link svg { width: 16px; height: 16px; }
+
+        /* ── Config card ──────────────────────── */
+        .config-card {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px; padding: 1.5rem; margin-bottom: 1.5rem;
+        }
+        .config-card h3 {
+            font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em;
+            color: rgba(255,255,255,0.4); margin-bottom: 1rem; display: flex; align-items: center; gap: 6px;
+        }
+        .config-card h3 svg { width: 16px; height: 16px; }
+
+        .config-grid { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: end; }
+        .config-field { display: flex; flex-direction: column; gap: 0.35rem; }
+        .config-field label {
+            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+            color: rgba(255,255,255,0.3);
+        }
+        .cfg-select, .cfg-input {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            color: #e0d6da; padding: 0.55rem 0.8rem; border-radius: 10px; font-size: 0.85rem;
+            min-width: 140px;
+        }
+        .cfg-select { cursor: pointer; }
+        .cfg-select:focus, .cfg-input:focus { outline: none; border-color: rgba(233,48,42,0.5); }
+
+        .btn-generate {
+            padding: 0.6rem 1.5rem; background: linear-gradient(135deg, #e9302a, #b91c1c);
+            color: #fff; border: none; border-radius: 10px; font-size: 0.88rem;
+            font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;
+            transition: all 0.2s; align-self: end;
+        }
+        .btn-generate:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(233,48,42,0.35); }
+        .btn-generate svg { width: 18px; height: 18px; }
+
+        /* ── Results section ──────────────────── */
+        .results-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .results-header h2 { font-size: 1.1rem; color: rgba(255,255,255,0.8); font-weight: 600; }
+        .results-count {
+            font-size: 0.82rem; color: rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.04); padding: 0.3rem 0.75rem; border-radius: 8px;
+        }
+
+        .report-table-wrap {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px; overflow: hidden; margin-bottom: 1.25rem;
+        }
+        .report-table { width: 100%; border-collapse: collapse; }
+        .report-table th {
+            font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+            color: rgba(255,255,255,0.35); padding: 0.75rem 0.85rem; text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02);
+        }
+        .report-table td {
+            padding: 0.65rem 0.85rem; font-size: 0.83rem; color: rgba(255,255,255,0.72);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .report-table tr:hover td { background: rgba(255,255,255,0.02); }
+        .report-table .r { text-align: right; }
+        .report-table .mono { font-family: monospace; font-size: 0.78rem; color: rgba(255,255,255,0.4); }
+        .report-table .bold { font-weight: 600; color: rgba(255,255,255,0.85); }
+
+        .badge-sm {
+            display: inline-block; padding: 0.18rem 0.5rem; border-radius: 6px;
+            font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+        }
+        .b-pendiente { background: rgba(234,179,8,0.12); color: #eab308; }
+        .b-surtido { background: rgba(59,130,246,0.12); color: #60a5fa; }
+        .b-enviado { background: rgba(139,92,246,0.12); color: #a78bfa; }
+        .b-entregado { background: rgba(34,197,94,0.12); color: #4ade80; }
+        .b-cancelado { background: rgba(239,68,68,0.12); color: #f87171; }
+
+        /* ── Export bar ───────────────────────── */
+        .export-bar {
+            display: flex; gap: 0.75rem; align-items: center; padding: 1rem 1.25rem;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px;
+        }
+        .export-bar .export-title {
+            font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-right: auto;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .export-bar .export-title svg { width: 16px; height: 16px; }
+        .btn-export {
+            padding: 0.55rem 1rem; border-radius: 10px; font-size: 0.82rem; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 6px; text-decoration: none;
+            transition: all 0.2s; border: 1px solid;
+        }
+        .btn-export:hover { transform: translateY(-1px); }
+        .btn-export svg { width: 16px; height: 16px; }
+        .btn-xlsx { background: rgba(34,197,94,0.1); color: #4ade80; border-color: rgba(34,197,94,0.25); }
+        .btn-xlsx:hover { background: rgba(34,197,94,0.18); }
+        .btn-pdf { background: rgba(239,68,68,0.1); color: #f87171; border-color: rgba(239,68,68,0.25); }
+        .btn-pdf:hover { background: rgba(239,68,68,0.18); }
+        .btn-docx { background: rgba(59,130,246,0.1); color: #60a5fa; border-color: rgba(59,130,246,0.25); }
+        .btn-docx:hover { background: rgba(59,130,246,0.18); }
+
+        .empty-state {
+            text-align: center; padding: 3rem; color: rgba(255,255,255,0.25);
+            font-size: 0.9rem;
+        }
+        .empty-state svg { width: 48px; height: 48px; opacity: 0.15; margin-bottom: 1rem; }
+
+        /* ── Active filters summary ──────────── */
+        .active-filters {
+            display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem;
+            padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .filter-tag {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.7rem;
+            background: rgba(233,48,42,0.1); color: #e9302a; border: 1px solid rgba(233,48,42,0.2);
+        }
+        .filter-tag svg { width: 12px; height: 12px; }
+    </style>
+</head>
+<body class="dashboard-body">
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>MACUIN</h2>
+                <span class="subtitle">Portal Interno</span>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="/inventario"><i data-feather="box"></i> Inventario / Autopartes</a></li>
+                    <li><a href="/pedidos"><i data-feather="shopping-cart"></i> Pedidos</a></li>
+                    <li><a href="/reportes" class="active"><i data-feather="bar-chart-2"></i> Reportes</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="/" class="logout-link"><i data-feather="log-out"></i> Cerrar Sesión</a>
+            </div>
+        </aside>
+
+        <main class="main-content">
+
+            <a href="/reportes" class="back-link">
+                <i data-feather="arrow-left"></i> Volver al Centro de Reportes
+            </a>
+
+            <header class="section-header" style="margin-bottom: 1.25rem;">
+                <div>
+                    <h1 class="page-title">Crear Nuevo Reporte</h1>
+                    <p class="page-description">Selecciona el tipo de reporte y aplica filtros. Luego genera la vista previa y exporta.</p>
+                </div>
+            </header>
+
+            <!-- ═══ CONFIGURACIÓN ═══ -->
+            <form action="/reportes/crear" method="GET" class="config-card">
+                <h3><i data-feather="sliders"></i> Configuración del Reporte</h3>
+                <div class="config-grid">
+
+                    <div class="config-field">
+                        <label>Tipo de reporte</label>
+                        <select name="tipo" class="cfg-select" id="tipoSelect" onchange="toggleFilters()">
+                            <option value="" disabled {% if not tipo %}selected{% endif %}>— Seleccionar —</option>
+                            <option value="ventas" {% if tipo == 'ventas' %}selected{% endif %}>Ventas</option>
+                            <option value="pedidos" {% if tipo == 'pedidos' %}selected{% endif %}>Pedidos</option>
+                            <option value="inventario" {% if tipo == 'inventario' %}selected{% endif %}>Inventario</option>
+                            <option value="clientes" {% if tipo == 'clientes' %}selected{% endif %}>Clientes</option>
+                        </select>
+                    </div>
+
+                    <div class="config-field filtro-fecha" id="filtroFechaInicio" style="{% if tipo not in ['ventas','pedidos'] %}display:none{% endif %}">
+                        <label>Fecha inicio</label>
+                        <input type="date" name="fecha_inicio" class="cfg-input" value="{{ fecha_inicio }}">
+                    </div>
+
+                    <div class="config-field filtro-fecha" id="filtroFechaFin" style="{% if tipo not in ['ventas','pedidos'] %}display:none{% endif %}">
+                        <label>Fecha fin</label>
+                        <input type="date" name="fecha_fin" class="cfg-input" value="{{ fecha_fin }}">
+                    </div>
+
+                    <div class="config-field filtro-estado" id="filtroEstado" style="{% if tipo not in ['pedidos'] %}display:none{% endif %}">
+                        <label>Estado</label>
+                        <select name="estado" class="cfg-select">
+                            <option value="">Todos</option>
+                            <option value="pendiente" {% if estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                            <option value="surtido" {% if estado == 'surtido' %}selected{% endif %}>Surtido</option>
+                            <option value="enviado" {% if estado == 'enviado' %}selected{% endif %}>Enviado</option>
+                            <option value="entregado" {% if estado == 'entregado' %}selected{% endif %}>Entregado</option>
+                            <option value="cancelado" {% if estado == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                        </select>
+                    </div>
+
+                    <div class="config-field filtro-marca" id="filtroMarca" style="{% if tipo != 'ventas' %}display:none{% endif %}">
+                        <label>Marca</label>
+                        <select name="marca_id" class="cfg-select">
+                            <option value="">Todas</option>
+                            {% for m in marcas %}
+                            <option value="{{ m.id }}" {% if marca_id|string == m.id|string %}selected{% endif %}>{{ m.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="config-field filtro-top" id="filtroTop" style="{% if tipo != 'ventas' %}display:none{% endif %}">
+                        <label>Top ventas</label>
+                        <select name="top" class="cfg-select">
+                            <option value="">Todos</option>
+                            <option value="3" {% if top == '3' %}selected{% endif %}>Top 3</option>
+                            <option value="5" {% if top == '5' %}selected{% endif %}>Top 5</option>
+                            <option value="10" {% if top == '10' %}selected{% endif %}>Top 10</option>
+                            <option value="20" {% if top == '20' %}selected{% endif %}>Top 20</option>
+                        </select>
+                    </div>
+
+                    <input type="hidden" name="generado" value="1">
+
+                    <button type="submit" class="btn-generate">
+                        <i data-feather="play"></i> Generar Reporte
+                    </button>
+                </div>
+
+                {% if generado and tipo %}
+                <div class="active-filters">
+                    <span class="filter-tag"><i data-feather="file-text"></i> {{ tipo|capitalize }}</span>
+                    {% if fecha_inicio %}<span class="filter-tag"><i data-feather="calendar"></i> Desde {{ fecha_inicio }}</span>{% endif %}
+                    {% if fecha_fin %}<span class="filter-tag"><i data-feather="calendar"></i> Hasta {{ fecha_fin }}</span>{% endif %}
+                    {% if estado %}<span class="filter-tag"><i data-feather="filter"></i> {{ estado|capitalize }}</span>{% endif %}
+                    {% if marca_id %}<span class="filter-tag"><i data-feather="tag"></i> Marca #{{ marca_id }}</span>{% endif %}
+                    {% if top %}<span class="filter-tag"><i data-feather="trending-up"></i> Top {{ top }}</span>{% endif %}
+                </div>
+                {% endif %}
+            </form>
+
+            {% if generado and tipo %}
+            <!-- ═══ RESULTADOS ═══ -->
+            <div class="results-header">
+                <h2>
+                    {% if tipo == 'ventas' %}Reporte de Ventas
+                    {% elif tipo == 'pedidos' %}Reporte de Pedidos
+                    {% elif tipo == 'inventario' %}Reporte de Inventario
+                    {% elif tipo == 'clientes' %}Reporte de Clientes
+                    {% endif %}
+                </h2>
+                <span class="results-count">{{ total_datos }} registros</span>
+            </div>
+
+            {% if datos %}
+            <div class="report-table-wrap">
+                <table class="report-table">
+                    {% if tipo == 'ventas' %}
+                    <thead><tr>
+                        <th>Código</th><th>Fecha</th><th>Cliente</th>
+                        <th class="r">Arts.</th><th class="r">Subtotal</th>
+                        <th class="r">IVA</th><th class="r">Total</th><th>Estado</th>
+                    </tr></thead>
+                    <tbody>
+                        {% for d in datos %}
+                        <tr>
+                            <td class="mono">{{ d.codigo }}</td>
+                            <td>{{ d.fecha }}</td>
+                            <td>{{ d.cliente }}</td>
+                            <td class="r">{{ d.articulos }}</td>
+                            <td class="r">${{ "%.2f"|format(d.subtotal) }}</td>
+                            <td class="r">${{ "%.2f"|format(d.impuestos) }}</td>
+                            <td class="r bold">${{ "%.2f"|format(d.total) }}</td>
+                            <td><span class="badge-sm b-{{ d.estado }}">{{ d.estado }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                    {% elif tipo == 'pedidos' %}
+                    <thead><tr>
+                        <th>Código</th><th>Fecha</th><th>Cliente</th>
+                        <th class="r">Arts.</th><th class="r">Total</th><th>Estado</th>
+                    </tr></thead>
+                    <tbody>
+                        {% for d in datos %}
+                        <tr>
+                            <td class="mono">{{ d.codigo }}</td>
+                            <td>{{ d.fecha }}</td>
+                            <td>{{ d.cliente }}</td>
+                            <td class="r">{{ d.articulos }}</td>
+                            <td class="r bold">${{ "%.2f"|format(d.total) }}</td>
+                            <td><span class="badge-sm b-{{ d.estado }}">{{ d.estado }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                    {% elif tipo == 'inventario' %}
+                    <thead><tr>
+                        <th>Código</th><th>Nombre</th><th>Tipo</th>
+                        <th>Marca</th><th class="r">Precio</th><th class="r">Stock</th>
+                    </tr></thead>
+                    <tbody>
+                        {% for d in datos %}
+                        <tr>
+                            <td class="mono">{{ d.codigo }}</td>
+                            <td>{{ d.nombre }}</td>
+                            <td>{{ d.tipo }}</td>
+                            <td>{{ d.marca }}</td>
+                            <td class="r">${{ "%.2f"|format(d.precio) }}</td>
+                            <td class="r bold">{{ d.stock }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                    {% elif tipo == 'clientes' %}
+                    <thead><tr>
+                        <th>Nombre</th><th>Email</th>
+                        <th class="r">Pedidos</th><th class="r">Gasto Total</th>
+                    </tr></thead>
+                    <tbody>
+                        {% for d in datos %}
+                        <tr>
+                            <td>{{ d.nombre }}</td>
+                            <td style="color:rgba(255,255,255,0.45)">{{ d.email }}</td>
+                            <td class="r">{{ d.pedidos }}</td>
+                            <td class="r bold">${{ "%.2f"|format(d.gasto_total) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    {% endif %}
+                </table>
+            </div>
+
+            <!-- Export bar -->
+            {% set base = "/reportes/exportar?tipo=" ~ tipo %}
+            {% if fecha_inicio %}{% set base = base ~ "&fecha_inicio=" ~ fecha_inicio %}{% endif %}
+            {% if fecha_fin %}{% set base = base ~ "&fecha_fin=" ~ fecha_fin %}{% endif %}
+            {% if estado %}{% set base = base ~ "&estado=" ~ estado %}{% endif %}
+            {% if marca_id %}{% set base = base ~ "&marca_id=" ~ marca_id %}{% endif %}
+            {% if top %}{% set base = base ~ "&top=" ~ top %}{% endif %}
+
+            <div class="export-bar">
+                <span class="export-title"><i data-feather="download"></i> Guardar reporte como:</span>
+                <button onclick="descargar('xlsx')" class="btn-export btn-xlsx">
+                    <i data-feather="file-text"></i> Excel (.xlsx)
+                </button>
+                <button onclick="descargar('pdf')" class="btn-export btn-pdf">
+                    <i data-feather="file"></i> PDF
+                </button>
+                <button onclick="descargar('docx')" class="btn-export btn-docx">
+                    <i data-feather="file-plus"></i> Word (.docx)
+                </button>
+            </div>
+
+            {% else %}
+            <div class="empty-state">
+                <i data-feather="inbox"></i>
+                <p>No se encontraron datos con los filtros seleccionados.</p>
+            </div>
+            {% endif %}
+
+            {% elif not generado %}
+            <!-- Estado inicial -->
+            <div class="empty-state" style="margin-top:2rem;">
+                <i data-feather="file-text"></i>
+                <p>Selecciona un tipo de reporte y haz clic en <strong>Generar Reporte</strong> para ver la vista previa.</p>
+            </div>
+            {% endif %}
+
+        </main>
+    </div>
+
+    <script>
+        feather.replace();
+
+        {% if generado and tipo %}
+        const exportBase = "{{ base }}";
+        {% endif %}
+
+        function descargar(formato) {
+            const url = exportBase + '&formato=' + formato;
+            const extMap = { xlsx: 'macuin_{{ tipo }}.xlsx', pdf: 'macuin_{{ tipo }}.pdf', docx: 'macuin_{{ tipo }}.docx' };
+            const filename = extMap[formato] || ('macuin_reporte.' + formato);
+
+            fetch(url, { credentials: 'same-origin' })
+                .then(resp => {
+                    if (!resp.ok) throw new Error('Error al generar el reporte');
+                    return resp.blob();
+                })
+                .then(blob => {
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(a.href);
+                })
+                .catch(err => alert(err.message));
+        }
+
+        function toggleFilters() {
+            const tipo = document.getElementById('tipoSelect').value;
+
+            // Date filters: ventas & pedidos
+            document.querySelectorAll('.filtro-fecha').forEach(el => {
+                el.style.display = (tipo === 'ventas' || tipo === 'pedidos') ? '' : 'none';
+            });
+
+            // Estado filter: pedidos only
+            document.querySelectorAll('.filtro-estado').forEach(el => {
+                el.style.display = (tipo === 'pedidos') ? '' : 'none';
+            });
+
+            // Marca filter: ventas only
+            document.querySelectorAll('.filtro-marca').forEach(el => {
+                el.style.display = (tipo === 'ventas') ? '' : 'none';
+            });
+
+            // Top filter: ventas only
+            document.querySelectorAll('.filtro-top').forEach(el => {
+                el.style.display = (tipo === 'ventas') ? '' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

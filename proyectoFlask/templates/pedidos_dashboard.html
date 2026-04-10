@@ -1,386 +1,222 @@
-﻿<!DOCTYPE html>
-
+<!DOCTYPE html>
 <html lang="es">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>MACUIN - Control Global de Pedidos</title>
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
     <script src="https://unpkg.com/feather-icons"></script>
-
 </head>
-
 <body class="dashboard-body">
-
     <div class="dashboard-layout">
 
-        
-
-        <!-- Sidebar (Reutilizado) -->
-
+        <!-- Sidebar -->
         <aside class="sidebar">
-
             <div class="sidebar-header">
-
                 <h2>MACUIN</h2>
-
                 <span class="subtitle">Portal Interno</span>
-
             </div>
-
             <nav class="sidebar-nav">
-
                 <ul>
-
-                    <li>
-
-                        <a href="/inventario">
-
-                            <i data-feather="box"></i>
-
-                            Inventario / Autopartes
-
-                        </a>
-
-                    </li>
-
-                    <li>
-
-                        <a href="/almacen/actualizar">
-
-                            <i data-feather="repeat"></i>
-
-                            Actualización Rápida
-
-                        </a>
-
-                    </li>
-
-                    <li>
-
-                        <a href="/pedidos" class="active">
-
-                            <i data-feather="shopping-cart"></i>
-
-                            Pedidos
-
-                        </a>
-
-                    </li>
-
-                    <li>
-
-                        <a href="/reportes">
-
-                            <i data-feather="bar-chart-2"></i>
-
-                            Reportes
-
-                        </a>
-
-                    </li>
-
+                    <li><a href="/inventario"><i data-feather="box"></i> Inventario / Autopartes</a></li>
+                    <li><a href="/pedidos" class="active"><i data-feather="shopping-cart"></i> Pedidos</a></li>
+                    <li><a href="/reportes"><i data-feather="bar-chart-2"></i> Reportes</a></li>
                 </ul>
-
             </nav>
-
             <div class="sidebar-footer">
-
-                <a href="/" class="logout-link">
-
-                    <i data-feather="log-out"></i>
-
-                    Cerrar Sesión
-
-                </a>
-
+                <a href="/" class="logout-link"><i data-feather="log-out"></i> Cerrar Sesión</a>
             </div>
-
         </aside>
 
-
-
         <!-- Contenido Principal -->
-
         <main class="main-content">
 
-            
-
-            <!-- Cabecera de la Sección -->
-
+            <!-- Cabecera -->
             <header class="section-header">
-
                 <div>
-
                     <h1 class="page-title">Control Global de Pedidos</h1>
-
-                    <p class="page-description">Monitoreo y Gestión centralizada de las órdenes de compra.</p>
-
+                    <p class="page-description">Monitoreo y gestión centralizada de las órdenes de compra.</p>
                 </div>
-
+                <div class="header-actions">
+                    <div class="search-bar">
+                        <i data-feather="search" class="search-icon"></i>
+                        <input type="text" placeholder="Buscar por N° pedido o cliente..." class="search-input" id="searchInput">
+                    </div>
+                </div>
             </header>
 
+            <!-- Barra de Filtros -->
+            <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center; margin-bottom:1.2rem; padding:0.8rem 1rem; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:12px;">
 
+                <span style="font-size:0.8rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.08em; margin-right:0.3rem;">
+                    <i data-feather="filter" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;"></i> Filtros:
+                </span>
 
-            <!-- Barra de Filtros y Búsqueda -->
+                <!-- Estatus -->
+                <select id="filtroEstatus" onchange="aplicarFiltros()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#e0d6da; padding:0.45rem 0.7rem; border-radius:8px; font-size:0.82rem; cursor:pointer; min-width:140px;">
+                    <option value="">Todos los estatus</option>
+                    <option value="pendiente" {% if filtro_estatus == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                    <option value="surtido" {% if filtro_estatus == 'surtido' %}selected{% endif %}>Surtido</option>
+                    <option value="enviado" {% if filtro_estatus == 'enviado' %}selected{% endif %}>Enviado</option>
+                    <option value="entregado" {% if filtro_estatus == 'entregado' %}selected{% endif %}>Entregado</option>
+                    <option value="cancelado" {% if filtro_estatus == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                </select>
 
-            <div class="filters-bar">
+                <div style="width:1px; height:24px; background:rgba(255,255,255,0.08);"></div>
 
-                <form action="/pedidos" method="GET" class="filters-form">
+                <span style="font-size:0.8rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.08em;">
+                    <i data-feather="arrow-up-down" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;"></i> Orden:
+                </span>
 
-                    
+                <!-- Orden -->
+                <select id="filtroOrden" onchange="aplicarFiltros()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#e0d6da; padding:0.45rem 0.7rem; border-radius:8px; font-size:0.82rem; cursor:pointer; min-width:160px;">
+                    <option value="" {% if not orden %}selected{% endif %}>Fecha: Más reciente</option>
+                    <option value="fecha_asc" {% if orden == 'fecha_asc' %}selected{% endif %}>Fecha: Más antiguo</option>
+                    <option value="total_desc" {% if orden == 'total_desc' %}selected{% endif %}>Total: Mayor a Menor</option>
+                    <option value="total_asc" {% if orden == 'total_asc' %}selected{% endif %}>Total: Menor a Mayor</option>
+                </select>
 
-                    <!-- Búsqueda -->
+                <div style="width:1px; height:24px; background:rgba(255,255,255,0.08);"></div>
 
-                    <div class="filter-group flex-grow">
+                <span style="font-size:0.8rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.08em;">
+                    <i data-feather="calendar" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;"></i> Fecha:
+                </span>
 
-                        <label for="buscar" class="sr-only">Buscar pedido o cliente</label>
+                <!-- Fecha exacta / rango -->
+                <input type="date" id="fechaInicio" value="{{ fecha_inicio }}" onchange="aplicarFiltros()" title="Fecha inicio"
+                       style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#e0d6da; padding:0.4rem 0.6rem; border-radius:8px; font-size:0.8rem; cursor:pointer;">
+                <span style="color:rgba(255,255,255,0.25); font-size:0.8rem;">a</span>
+                <input type="date" id="fechaFin" value="{{ fecha_fin }}" onchange="aplicarFiltros()" title="Fecha fin"
+                       style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#e0d6da; padding:0.4rem 0.6rem; border-radius:8px; font-size:0.8rem; cursor:pointer;">
 
-                        <div class="search-input-wrapper">
+                <!-- Mes -->
+                <select id="filtroMes" onchange="aplicarFiltros()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#e0d6da; padding:0.45rem 0.6rem; border-radius:8px; font-size:0.82rem; cursor:pointer;">
+                    <option value="">Mes</option>
+                    <option value="1" {% if filtro_mes == '1' %}selected{% endif %}>Enero</option>
+                    <option value="2" {% if filtro_mes == '2' %}selected{% endif %}>Febrero</option>
+                    <option value="3" {% if filtro_mes == '3' %}selected{% endif %}>Marzo</option>
+                    <option value="4" {% if filtro_mes == '4' %}selected{% endif %}>Abril</option>
+                    <option value="5" {% if filtro_mes == '5' %}selected{% endif %}>Mayo</option>
+                    <option value="6" {% if filtro_mes == '6' %}selected{% endif %}>Junio</option>
+                    <option value="7" {% if filtro_mes == '7' %}selected{% endif %}>Julio</option>
+                    <option value="8" {% if filtro_mes == '8' %}selected{% endif %}>Agosto</option>
+                    <option value="9" {% if filtro_mes == '9' %}selected{% endif %}>Septiembre</option>
+                    <option value="10" {% if filtro_mes == '10' %}selected{% endif %}>Octubre</option>
+                    <option value="11" {% if filtro_mes == '11' %}selected{% endif %}>Noviembre</option>
+                    <option value="12" {% if filtro_mes == '12' %}selected{% endif %}>Diciembre</option>
+                </select>
 
-                            <i data-feather="search" aria-hidden="true"></i>
+                <!-- Año -->
+                <select id="filtroAnio" onchange="aplicarFiltros()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#e0d6da; padding:0.45rem 0.6rem; border-radius:8px; font-size:0.82rem; cursor:pointer;">
+                    <option value="">Año</option>
+                    <option value="2026" {% if filtro_anio == '2026' %}selected{% endif %}>2026</option>
+                    <option value="2025" {% if filtro_anio == '2025' %}selected{% endif %}>2025</option>
+                    <option value="2024" {% if filtro_anio == '2024' %}selected{% endif %}>2024</option>
+                </select>
 
-                            <input type="text" id="buscar" name="buscar" placeholder="Número de pedido o cliente..." class="filter-input w-full">
-
-                        </div>
-
-                    </div>
-
-                    
-
-                    <!-- Filtro Estatus -->
-
-                    <div class="filter-group w-48">
-
-                        <label for="estatus" class="sr-only">Estatus</label>
-
-                        <select id="estatus" name="estatus" class="filter-select">
-
-                            <option value="">Todos los estatus</option>
-
-                            <option value="pendiente">Pendiente</option>
-
-                            <option value="surtido">Surtido en Almacén</option>
-
-                            <option value="enviado">Enviado</option>
-
-                            <option value="entregado">Entregado</option>
-
-                            <option value="cancelado">Cancelado</option>
-
-                        </select>
-
-                    </div>
-
-
-
-                    <!-- Filtro Fecha (Input type date x2 usando flex para simular un rango, o uno solo) -->
-
-                    <div class="filter-group date-range-group">
-
-                        <label class="sr-only">Rango de fechas</label>
-
-                        <input type="date" name="fecha_inicio" title="Fecha inicio" class="filter-input date-input">
-
-                        <span class="date-separator">-</span>
-
-                        <input type="date" name="fecha_fin" title="Fecha fin" class="filter-input date-input">
-
-                    </div>
-
-
-
-                    <button type="submit" class="btn-primary">Filtrar</button>
-
-                    <a href="/pedidos" class="btn-secondary btn-icon-only" title="Limpiar filtros" aria-label="Limpiar">
-
-                        <i data-feather="x"></i>
-
-                    </a>
-
-                </form>
-
+                {% if filtro_estatus or orden or fecha_inicio or fecha_fin or filtro_mes or filtro_anio %}
+                <a href="/pedidos" style="font-size:0.8rem; color:#f87171; text-decoration:none; margin-left:auto; display:flex; align-items:center; gap:4px;">
+                    <i data-feather="x" style="width:14px;height:14px;"></i> Limpiar
+                </a>
+                {% endif %}
             </div>
 
-
-
-            <!-- Tabla Maestra de Pedidos -->
-
-            <section class="table-container mt-6">
-
+            <!-- Tabla de Pedidos -->
+            <section class="table-container">
                 <table class="data-table">
-
                     <thead>
-
                         <tr>
-
                             <th>ID Pedido</th>
-
                             <th>Fecha</th>
-
                             <th>Cliente</th>
-
                             <th class="text-right">Artículos</th>
-
                             <th class="text-right">Total ($)</th>
-
                             <th>Estatus</th>
-
                             <th class="actions-col">Acciones</th>
-
                         </tr>
-
                     </thead>
-
                     <tbody>
-
-                        <!-- Bucle Jinja -->
-
                         {% for pedido in pedidos %}
-
                         <tr>
-
-                            <!-- ID Pedido -->
-
                             <td class="font-mono font-bold">{{ pedido.id }}</td>
-
-                            <!-- Fecha -->
-
-                            <td class="text-sm text-muted">{{ pedido.fecha }}</td>
-
-                            <!-- Cliente -->
-
+                            <td class="text-muted" style="font-size:0.85rem;">{{ pedido.fecha }}</td>
                             <td>
-
-                                <span class="font-medium block">{{ pedido.cliente.nombre }}</span>
-
-                                <span class="text-sm text-muted">Tel: {{ pedido.cliente.telefono }}</span>
-
+                                <span class="font-medium">{{ pedido.cliente.nombre }}</span>
                             </td>
-
-                            <!-- N. Artículos -->
-
                             <td class="text-right text-muted">{{ pedido.articulos }}</td>
-
-                            <!-- Total -->
-
                             <td class="font-medium text-right">${{ "%.2f"|format(pedido.total) }}</td>
-
-                            <!-- Estatus (Badge condicional) -->
-
                             <td>
-
-                                {% if pedido.estatus == 'Pendiente' %}
-
-                                    <!-- Pendiente: Requiere atención (Acento) -->
-
-                                    <span class="status-badge status-pending">Pendiente</span>
-
-                                {% elif pedido.estatus == 'Surtido' %}
-
-                                    <span class="status-badge status-processing">Surtido</span>
-
-                                {% elif pedido.estatus == 'Enviado' %}
-
-                                    <!-- Enviado: Color gris oscuro pero destacado -->
-
-                                    <span class="status-badge status-shipped">Enviado</span>
-
-                                {% elif pedido.estatus == 'Entregado' %}
-
-                                    <!-- Entregado: Inactivo/Logrado (Gris muy tenue) -->
-
-                                    <span class="status-badge status-delivered">Entregado</span>
-
-                                {% elif pedido.estatus == 'Cancelado' %}
-
-                                    <!-- Cancelado: Tachado / Riesgo -->
-
-                                    <span class="status-badge status-cancelled">Cancelado</span>
-
+                                {% set est = pedido.estatus.lower() %}
+                                {% if est == 'pendiente' %}
+                                <span class="status-badge status-pending">Pendiente</span>
+                                {% elif est == 'surtido' %}
+                                <span class="status-badge status-processing">Surtido</span>
+                                {% elif est == 'enviado' or est == 'en_camino' %}
+                                <span class="status-badge status-shipped">Enviado</span>
+                                {% elif est == 'entregado' %}
+                                <span class="status-badge status-delivered">Entregado</span>
+                                {% elif est == 'cancelado' %}
+                                <span class="status-badge status-cancelled">Cancelado</span>
+                                {% else %}
+                                <span class="status-badge">{{ pedido.estatus }}</span>
                                 {% endif %}
-
                             </td>
-
-                            <!-- Acciones -->
-
-                            <td class="actions-cell">
-
-                                <a href="/pedidos/detalle/{{ pedido.id }}" class="btn-secondary btn-small">
-
-                                    Ver Detalle <i data-feather="chevron-right"></i>
-
-                                </a>
-
+                            <td class="actions-col">
+                                <div class="actions-cell">
+                                    <a href="/pedidos/detalle/{{ pedido.id }}" class="btn-secondary btn-small" style="text-decoration:none;">
+                                        Ver Detalle <i data-feather="chevron-right"></i>
+                                    </a>
+                                </div>
                             </td>
-
                         </tr>
-
                         {% else %}
-
                         <tr>
-
                             <td colspan="7" class="empty-state">No se encontraron pedidos con los filtros aplicados.</td>
-
                         </tr>
-
                         {% endfor %}
-
                     </tbody>
-
                 </table>
-
             </section>
 
-
-
-            <!-- Paginación reutilizada -->
-
+            <!-- Paginación dinámica -->
             <div class="pagination-container">
-
-                <span class="pagination-info">Mostrando 1 a 10 de 1,240 pedidos</span>
-
-                <div class="pagination-controls">
-
-                    <button class="btn-paginate" disabled><i data-feather="chevron-left"></i> Anterior</button>
-
-                    <button class="btn-paginate active">1</button>
-
-                    <button class="btn-paginate">2</button>
-
-                    <button class="btn-paginate">3</button>
-
-                    <span class="pagination-ellipsis">...</span>
-
-                    <button class="btn-paginate">124</button>
-
-                    <button class="btn-paginate">Siguiente <i data-feather="chevron-right"></i></button>
-
-                </div>
-
+                <span class="pagination-info">Mostrando {{ pedidos|length }} de {{ total_pedidos }} pedidos</span>
             </div>
 
-
-
         </main>
-
     </div>
 
-
-
     <script>
-
         feather.replace();
 
+        // Búsqueda local
+        document.getElementById('searchInput').addEventListener('input', function() {
+            var filter = this.value.toLowerCase();
+            var rows = document.querySelectorAll('.data-table tbody tr');
+            rows.forEach(function(row) {
+                row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
+            });
+        });
+
+        // Filtros server-side
+        function aplicarFiltros() {
+            var params = new URLSearchParams();
+            var estatus = document.getElementById('filtroEstatus').value;
+            var orden = document.getElementById('filtroOrden').value;
+            var fechaInicio = document.getElementById('fechaInicio').value;
+            var fechaFin = document.getElementById('fechaFin').value;
+            var mes = document.getElementById('filtroMes').value;
+            var anio = document.getElementById('filtroAnio').value;
+
+            if (estatus) params.set('estatus', estatus);
+            if (orden) params.set('orden', orden);
+            if (fechaInicio) params.set('fecha_inicio', fechaInicio);
+            if (fechaFin) params.set('fecha_fin', fechaFin);
+            if (mes) params.set('mes', mes);
+            if (anio) params.set('anio', anio);
+
+            window.location.href = '/pedidos' + (params.toString() ? '?' + params.toString() : '');
+        }
     </script>
-
 </body>
-
 </html>
-

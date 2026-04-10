@@ -1,324 +1,240 @@
-﻿<!DOCTYPE html>
-
+<!DOCTYPE html>
 <html lang="es">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>MACUIN - {% if autoparte %}Editar Autoparte{% else %}Registrar Autoparte{% endif %}</title>
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
     <script src="https://unpkg.com/feather-icons"></script>
-
 </head>
-
 <body class="dashboard-body">
-
     <div class="dashboard-layout">
 
-        
-
-        <!-- Sidebar (Reutilizado del Dashboard) -->
-
+        <!-- Sidebar -->
         <aside class="sidebar">
-
             <div class="sidebar-header">
-
                 <h2>MACUIN</h2>
-
                 <span class="subtitle">Portal Interno</span>
-
             </div>
-
             <nav class="sidebar-nav">
-
                 <ul>
-
-                                                            <li>
-                        <a href="/inventario" class="active">
-                            <i data-feather="box"></i>
-                            Inventario / Autopartes
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/almacen/actualizar">
-                            <i data-feather="repeat"></i>
-                            Actualización Rápida
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/almacen/actualizar">
-                            <i data-feather="repeat"></i>
-                            Actualización Rápida
-                        </a>
-                    </li>
-
-                    <li>
-
-                        <a href="/pedidos">
-                            <i data-feather="shopping-cart"></i>
-                            Pedidos
-                        </a>
-
-                    </li>
-
-                    <li>
-
-                        <a href="/reportes">
-
-                            <i data-feather="bar-chart-2"></i>
-
-                            Reportes
-
-                        </a>
-
-                    </li>
-
+                    <li><a href="/inventario" class="active"><i data-feather="box"></i> Inventario / Autopartes</a></li>
+                    <li><a href="/pedidos"><i data-feather="shopping-cart"></i> Pedidos</a></li>
+                    <li><a href="/reportes"><i data-feather="bar-chart-2"></i> Reportes</a></li>
                 </ul>
-
             </nav>
-
             <div class="sidebar-footer">
-
-                <a href="/" class="logout-link">
-
-                    <i data-feather="log-out"></i>
-
-                    Cerrar Sesión
-
-                </a>
-
+                <a href="/" class="logout-link"><i data-feather="log-out"></i> Cerrar Sesión</a>
             </div>
-
         </aside>
 
-
-
         <!-- Contenido Principal -->
-
         <main class="main-content form-view-content">
-
-            
-
             <div class="form-container">
 
-                <!-- Enlace de regreso -->
-
                 <a href="/inventario" class="back-link">
-
-                    <i data-feather="arrow-left"></i>
-
-                    Volver al listado
-
+                    <i data-feather="arrow-left"></i> Volver al listado
                 </a>
 
-
-
-                <!-- Tarjeta del Formulario -->
-
                 <div class="form-card">
-
                     <header class="form-header">
-
                         <h1 class="page-title">
-
                             {% if autoparte %}Editar Autoparte{% else %}Registrar Nueva Autoparte{% endif %}
-
                         </h1>
-
                         <p class="page-description">Complete los detalles de la pieza en el sistema central.</p>
-
                     </header>
 
-
-
-                    <form action="/autoparte/guardar" method="POST" id="autoparteForm" enctype="multipart/form-data">
-
+                    <form action="/autoparte/guardar" method="POST" id="autoparteForm">
                         <div class="form-grid-2">
 
-                            <!-- Código SKU -->
-
+                            <!-- Código SKU (auto-generado) -->
                             <div class="form-group">
-
-                                <label for="codigo">Código SKU / Número de parte</label>
-
-                                <input type="text" id="codigo" name="codigo" 
-
-                                       value="{{ autoparte.codigo if autoparte else '' }}" 
-
-                                       placeholder="Ej. BOSCH-001" required {% if autoparte %}readonly{% endif %}>
-
-                            </div>
-
-
-
-                            <!-- Nombre -->
-
-                            <div class="form-group">
-
-                                <label for="nombre">Nombre de la pieza</label>
-
-                                <input type="text" id="nombre" name="nombre" 
-
-                                       value="{{ autoparte.nombre if autoparte else '' }}" 
-
-                                       placeholder="Ej. Filtro de Aceite Sintético" required>
-
-                            </div>
-
-
-
-                            <!-- CATEGORÍA -->
-
-                            <div class="form-group">
-
-                                <label for="categoria">CATEGORÍA / Sistema</label>
-
-                                <select id="categoria" name="categoria" required>
-
-                                    <option value="" disabled {% if not autoparte %}selected{% endif %}>Seleccione una CATEGORÍA</option>
-
-                                    <option value="Motor" {% if autoparte and autoparte.categoria == 'Motor' %}selected{% endif %}>Motor</option>
-
-                                    <option value="Frenos" {% if autoparte and autoparte.categoria == 'Frenos' %}selected{% endif %}>Frenos</option>
-
-                                    <option value="Eléctrico" {% if autoparte and autoparte.categoria == 'Eléctrico' %}selected{% endif %}>Eléctrico</option>
-
-                                    <option value="Suspensión" {% if autoparte and autoparte.categoria == 'Suspensión' %}selected{% endif %}>Suspensión</option>
-
-                                    <option value="Encendido" {% if autoparte and autoparte.categoria == 'Encendido' %}selected{% endif %}>Encendido</option>
-
-                                    <option value="Ruedas" {% if autoparte and autoparte.categoria == 'Ruedas' %}selected{% endif %}>Ruedas</option>
-
-                                </select>
-
-                            </div>
-
-
-
-                            <!-- Precio Unitario -->
-
-                            <div class="form-group">
-
-                                <label for="precio">Precio Unitario ($)</label>
-
-                                <input type="number" id="precio" name="precio" step="0.01" min="0" 
-
-                                       value="{{ autoparte.precio if autoparte else '' }}" 
-
-                                       placeholder="0.00" required>
-
-                            </div>
-
-
-
-                            <!-- Stock Inicial -->
-
-                            <div class="form-group">
-
-                                <label for="stock">Stock {% if autoparte %}Actual{% else %}Inicial{% endif %}</label>
-
-                                <input type="number" id="stock" name="stock" min="0" 
-
-                                       value="{{ autoparte.stock if autoparte else '' }}" 
-
-                                       placeholder="0" required>
-
-                            </div>
-
-                            <!-- Imagen del Producto -->
-                            <div class="form-group">
-                                <label for="imagen">Imagen del Producto</label>
-                                <input type="file" id="imagen" name="imagen" accept="image/*" class="form-control" style="padding-top: 10px;">
-                                {% if autoparte and autoparte.imagen_url %}
-                                <div style="margin-top: 10px;">
-                                    <small>Imagen actual:</small><br>
-                                    <img src="{{ autoparte.imagen_url }}" alt="Imagen actual" style="max-width: 100px; max-height: 100px; border-radius: 4px; margin-top: 5px;">
+                                <label for="codigo">Código SKU</label>
+                                {% if autoparte %}
+                                <input type="text" id="codigo" name="codigo"
+                                       value="{{ autoparte.codigo }}" readonly
+                                       style="opacity:0.6; cursor:not-allowed;">
+                                <span class="form-hint">El código no se puede modificar.</span>
+                                {% else %}
+                                <div class="readonly-field" style="font-size:0.85rem; color:rgba(255,255,255,0.4); font-style:italic; padding:10px 14px;">
+                                    Se generará automáticamente según la marca
                                 </div>
                                 {% endif %}
                             </div>
 
-                            <!-- Espacio vacío para balancear el grid si fuera necesario, o dejar que descripción ocupe ambas columnas -->
+                            <!-- Nombre -->
+                            <div class="form-group">
+                                <label for="nombre">Nombre de la pieza</label>
+                                <input type="text" id="nombre" name="nombre"
+                                       value="{{ autoparte.nombre if autoparte else '' }}"
+                                       placeholder="Ej. Filtro de Aceite Sintético" required>
+                            </div>
 
-                            
+                            <!-- Tipo de Autoparte -->
+                            <div class="form-group">
+                                <label for="id_tipo_autoparte">Tipo de Autoparte</label>
+                                <select id="id_tipo_autoparte" name="id_tipo_autoparte" onchange="toggleNuevoTipo(this)">
+                                    <option value="">— Sin tipo —</option>
+                                    {% for t in tipos %}
+                                    <option value="{{ t.id }}" {% if autoparte and autoparte.id_tipo_autoparte == t.id %}selected{% endif %}>{{ t.nombre }}</option>
+                                    {% endfor %}
+                                    <option value="nuevo" style="color:#e9302a; font-weight:bold;">+ Agregar nuevo tipo...</option>
+                                </select>
+                                <div id="nuevoTipoContainer" style="display:none; margin-top:8px;">
+                                    <input type="text" id="nuevo_tipo" name="nuevo_tipo" placeholder="Nombre del nuevo tipo" style="border-color:rgba(233,48,42,0.4);">
+                                </div>
+                            </div>
 
-                            <!-- Descripción (Ancho completo) -->
+                            <!-- Marca -->
+                            <div class="form-group">
+                                <label for="id_marca">Marca</label>
+                                <select id="id_marca" name="id_marca" onchange="toggleNuevaMarca(this)">
+                                    <option value="">— Sin marca —</option>
+                                    {% for m in marcas %}
+                                    <option value="{{ m.id }}" {% if autoparte and autoparte.id_marca == m.id %}selected{% endif %}>{{ m.nombre }}</option>
+                                    {% endfor %}
+                                    <option value="nuevo" style="color:#e9302a; font-weight:bold;">+ Agregar nueva marca...</option>
+                                </select>
+                                <div id="nuevaMarcaContainer" style="display:none; margin-top:8px;">
+                                    <input type="text" id="nueva_marca" name="nueva_marca" placeholder="Nombre de la nueva marca" style="border-color:rgba(233,48,42,0.4);">
+                                </div>
+                            </div>
 
+                            <!-- Precio -->
+                            <div class="form-group">
+                                <label for="precio">Precio Unitario ($)</label>
+                                <input type="number" id="precio" name="precio" step="0.01" min="0"
+                                       value="{{ autoparte.precio if autoparte else '' }}"
+                                       placeholder="0.00" required>
+                            </div>
+
+                            <!-- Stock -->
+                            <div class="form-group">
+                                <label for="stock">Stock {% if autoparte %}Actual{% else %}Inicial{% endif %}</label>
+                                <input type="number" id="stock" name="stock" min="0"
+                                       value="{{ autoparte.stock if autoparte else '' }}"
+                                       placeholder="0" required>
+                            </div>
+
+                            <!-- URL de Imagen + Preview -->
                             <div class="form-group full-width">
+                                <label for="imagen_url">URL de Imagen del Producto</label>
+                                <div style="display:flex;gap:1rem;align-items:flex-start;">
+                                    <div style="flex:1;">
+                                        <input type="text" id="imagen_url" name="imagen_url"
+                                               value="{{ autoparte.imagen_url if autoparte and autoparte.imagen_url else '' }}"
+                                               placeholder="https://ejemplo.com/imagen-producto.jpg">
+                                        <small style="color:var(--text-muted,#888);display:block;margin-top:6px;font-size:0.8rem;">
+                                            Pegue la URL directa de la imagen (formato JPG, PNG o WebP).
+                                        </small>
+                                    </div>
+                                    <div id="preview-container" style="width:120px;min-width:120px;height:120px;border-radius:10px;border:2px dashed rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;overflow:hidden;background:rgba(0,0,0,0.25);transition:border-color 0.3s ease;">
+                                        <img id="preview-img"
+                                             src="{{ autoparte.imagen_url if autoparte and autoparte.imagen_url else '' }}"
+                                             alt="Vista previa"
+                                             style="width:100%;height:100%;object-fit:cover;display:{{ 'block' if autoparte and autoparte.imagen_url else 'none' }};">
+                                        <span id="preview-placeholder" style="color:rgba(255,255,255,0.25);font-size:0.75rem;text-align:center;padding:8px;display:{{ 'none' if autoparte and autoparte.imagen_url else 'block' }};">
+                                            Sin imagen
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
 
+                            <!-- Descripción -->
+                            <div class="form-group full-width">
                                 <label for="descripcion">Descripción detallada</label>
-
-                                <textarea id="descripcion" name="descripcion" rows="4" 
-
+                                <textarea id="descripcion" name="descripcion" rows="4"
                                           placeholder="Especificaciones técnicas, compatibilidad con modelos, etc."
-
                                 >{{ autoparte.descripcion if autoparte else '' }}</textarea>
-
                             </div>
 
                         </div>
 
-
-
                         <!-- Acciones -->
-
                         <div class="form-actions border-top">
-
                             <a href="/inventario" class="btn-secondary">Cancelar</a>
-
                             <button type="submit" class="btn-primary">
-
-                                <i data-feather="save"></i>
-
-                                Guardar Autoparte
-
+                                <i data-feather="save"></i> Guardar Autoparte
                             </button>
-
                         </div>
-
                     </form>
-
                 </div>
-
             </div>
-
-            
-
         </main>
-
     </div>
 
-
-
     <script>
-
         feather.replace();
 
-        
+        // ── Toggle para "Agregar nuevo tipo" ───────────────
+        function toggleNuevoTipo(select) {
+            var container = document.getElementById('nuevoTipoContainer');
+            var input = document.getElementById('nuevo_tipo');
+            if (select.value === 'nuevo') {
+                container.style.display = 'block';
+                input.focus();
+            } else {
+                container.style.display = 'none';
+                input.value = '';
+            }
+        }
 
-        // Opcional: Script para enviar como JSON si se prefiere sobre el form submit clásico
+        // ── Toggle para "Agregar nueva marca" ──────────────
+        function toggleNuevaMarca(select) {
+            var container = document.getElementById('nuevaMarcaContainer');
+            var input = document.getElementById('nueva_marca');
+            if (select.value === 'nuevo') {
+                container.style.display = 'block';
+                input.focus();
+            } else {
+                container.style.display = 'none';
+                input.value = '';
+            }
+        }
 
-        document.getElementById('autoparteForm').addEventListener('submit', function(e) {
+        // ── Live Image Preview ─────────────────────────────
+        (function() {
+            var urlInput = document.getElementById('imagen_url');
+            var previewImg = document.getElementById('preview-img');
+            var placeholder = document.getElementById('preview-placeholder');
+            var container = document.getElementById('preview-container');
+            var debounceTimer = null;
 
-            // e.preventDefault();
+            function updatePreview(url) {
+                if (!url || !url.trim()) {
+                    previewImg.style.display = 'none';
+                    placeholder.textContent = 'Sin imagen';
+                    placeholder.style.display = 'block';
+                    container.style.borderColor = 'rgba(255,255,255,0.12)';
+                    return;
+                }
+                previewImg.src = url.trim();
+            }
 
-            // Lógica fetch() para mandar JSON a FastAPI si fuera necesario aquí
+            previewImg.addEventListener('load', function() {
+                previewImg.style.display = 'block';
+                placeholder.style.display = 'none';
+                container.style.borderColor = 'rgba(60,255,60,0.4)';
+            });
 
-            // const formData = new FormData(this);
+            previewImg.addEventListener('error', function() {
+                previewImg.style.display = 'none';
+                placeholder.textContent = 'URL inválida';
+                placeholder.style.display = 'block';
+                container.style.borderColor = 'rgba(255,60,60,0.4)';
+            });
 
-            // const data = Object.fromEntries(formData.entries());
+            urlInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(function() {
+                    updatePreview(urlInput.value);
+                }, 400);
+            });
 
-            // console.log("Datos a enviar:", data);
-
-        });
-
+            if (urlInput.value.trim()) {
+                updatePreview(urlInput.value);
+            }
+        })();
     </script>
-
 </body>
-
 </html>
-

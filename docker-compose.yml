@@ -1,5 +1,52 @@
 services:
-  # Contenedor del Backend con Laravel
+  # ============================================================
+  #  Base de Datos — PostgreSQL 16
+  # ============================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: macuin_postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      # Volumen persistente para datos
+      - macuin_pgdata:/var/lib/postgresql/data
+      # Script de inicialización (se ejecuta solo la primera vez)
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_USER: macuin_user
+      POSTGRES_PASSWORD: macuin_pass_2026
+      POSTGRES_DB: macuin_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U macuin_user -d macuin_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ============================================================
+  #  API REST — FastAPI
+  # ============================================================
+  fastapi:
+    build:
+      context: ./proyectoAPI
+      dockerfile: Dockerfile
+    container_name: macuin_api
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./proyectoAPI:/app
+    environment:
+      - DATABASE_URL=postgresql://macuin_user:macuin_pass_2026@postgres:5432/macuin_db
+      - JWT_SECRET_KEY=macuin-secret-key-2026
+      - JWT_EXPIRE_HOURS=8
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ============================================================
+  #  Backend — Laravel
+  # ============================================================
   laravel:
     build:
       context: ./proyectoLaravel
@@ -14,9 +61,15 @@ services:
       - /var/www/node_modules
     environment:
       - APP_ENV=local
+      - MACUIN_API_URL=http://fastapi:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
-  # Contenedor del Frontend/Portal con Flask
+  # ============================================================
+  #  Frontend/Portal — Flask
+  # ============================================================
   flask:
     build:
       context: ./proyectoFlask
@@ -28,4 +81,15 @@ services:
       - ./proyectoFlask:/app
     environment:
       - FLASK_ENV=development
+      - MACUIN_API_URL=http://fastapi:8080
+    depends_on:
+      fastapi:
+        condition: service_started
     restart: unless-stopped
+
+# ============================================================
+#  Volúmenes
+# ============================================================
+volumes:
+  macuin_pgdata:
+
