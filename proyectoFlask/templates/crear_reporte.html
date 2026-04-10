@@ -141,6 +141,16 @@
         .filter-tag .x { font-size: 0.8rem; margin-left: 2px; opacity: 0.5; }
         .filter-tag:hover .x { opacity: 1; }
         .filter-tag svg { width: 12px; height: 12px; }
+
+        .email-muted { color: rgba(255,255,255,0.45); }
+        .empty-state-top { margin-top: 2rem; }
+        .section-header-mb { margin-bottom: 1.25rem; }
+        .precio-input { width: 100px; }
+
+        /* Hidden by default, JS toggleFilters() shows them */
+        .filtro-fecha, .filtro-estado, .filtro-pedidos-orden,
+        .filtro-marca, .filtro-top, .filtro-inv-tipo,
+        .filtro-inv-orden, .filtro-inv-precio, .filtro-alfa { display: none; }
     </style>
 </head>
 <body class="dashboard-body">
@@ -168,7 +178,7 @@
                 <i data-feather="arrow-left"></i> Volver al Centro de Reportes
             </a>
 
-            <header class="section-header" style="margin-bottom: 1.25rem;">
+            <header class="section-header section-header-mb">
                 <div>
                     <h1 class="page-title">Crear Nuevo Reporte</h1>
                     <p class="page-description">Selecciona el tipo de reporte y aplica filtros. Luego genera la vista previa y exporta.</p>
@@ -182,7 +192,7 @@
 
                     <div class="config-field">
                         <label>Tipo de reporte</label>
-                        <select name="tipo" class="cfg-select" id="tipoSelect" onchange="toggleFilters()">
+                        <select name="tipo" class="cfg-select" id="tipoSelect" title="Tipo de reporte" onchange="toggleFilters()">
                             <option value="" disabled {% if not tipo %}selected{% endif %}>— Seleccionar —</option>
                             <option value="ventas" {% if tipo == 'ventas' %}selected{% endif %}>Ventas</option>
                             <option value="pedidos" {% if tipo == 'pedidos' %}selected{% endif %}>Pedidos</option>
@@ -191,19 +201,19 @@
                         </select>
                     </div>
 
-                    <div class="config-field filtro-fecha" id="filtroFechaInicio" style="{% if tipo not in ['ventas','pedidos'] %}display:none{% endif %}">
-                        <label>Fecha inicio</label>
-                        <input type="date" name="fecha_inicio" class="cfg-input" value="{{ fecha_inicio }}">
+                    <div class="config-field filtro-fecha" id="filtroFechaInicio">
+                        <label for="fechaInicio">Fecha inicio</label>
+                        <input type="date" name="fecha_inicio" id="fechaInicio" class="cfg-input" title="Fecha inicio" value="{{ fecha_inicio }}">
                     </div>
 
-                    <div class="config-field filtro-fecha" id="filtroFechaFin" style="{% if tipo not in ['ventas','pedidos'] %}display:none{% endif %}">
-                        <label>Fecha fin</label>
-                        <input type="date" name="fecha_fin" class="cfg-input" value="{{ fecha_fin }}">
+                    <div class="config-field filtro-fecha" id="filtroFechaFin">
+                        <label for="fechaFin">Fecha fin</label>
+                        <input type="date" name="fecha_fin" id="fechaFin" class="cfg-input" title="Fecha fin" value="{{ fecha_fin }}">
                     </div>
 
-                    <div class="config-field filtro-estado" id="filtroEstado" style="{% if tipo not in ['pedidos'] %}display:none{% endif %}">
-                        <label>Estado</label>
-                        <select name="estado" class="cfg-select">
+                    <div class="config-field filtro-estado" id="filtroEstado">
+                        <label for="estadoSelect">Estado</label>
+                        <select name="estado" id="estadoSelect" class="cfg-select" title="Estado del pedido">
                             <option value="">Todos</option>
                             <option value="pendiente" {% if estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
                             <option value="surtido" {% if estado == 'surtido' %}selected{% endif %}>Surtido</option>
@@ -213,18 +223,18 @@
                         </select>
                     </div>
 
-                    <div class="config-field filtro-pedidos-orden" id="filtroPedidosOrden" style="{% if tipo != 'pedidos' %}display:none{% endif %}">
-                        <label>Nº artículos</label>
-                        <select name="ordenar" class="cfg-select filtro-pedidos-ordenar">
+                    <div class="config-field filtro-pedidos-orden" id="filtroPedidosOrden">
+                        <label for="pedidosOrdenar">Nº artículos</label>
+                        <select name="ordenar" id="pedidosOrdenar" class="cfg-select filtro-pedidos-ordenar" title="Ordenar por artículos">
                             <option value="">Sin orden</option>
                             <option value="arts_desc" {% if ordenar == 'arts_desc' %}selected{% endif %}>Mayor a menor</option>
                             <option value="arts_asc" {% if ordenar == 'arts_asc' %}selected{% endif %}>Menor a mayor</option>
                         </select>
                     </div>
 
-                    <div class="config-field filtro-marca" id="filtroMarca" style="{% if tipo not in ['ventas','inventario'] %}display:none{% endif %}">
-                        <label>Marca</label>
-                        <select name="marca_id" class="cfg-select">
+                    <div class="config-field filtro-marca" id="filtroMarca">
+                        <label for="marcaSelect">Marca</label>
+                        <select name="marca_id" id="marcaSelect" class="cfg-select" title="Marca">
                             <option value="">Todas</option>
                             {% for m in marcas %}
                             <option value="{{ m.id }}" {% if marca_id|string == m.id|string %}selected{% endif %}>{{ m.nombre }}</option>
@@ -232,9 +242,9 @@
                         </select>
                     </div>
 
-                    <div class="config-field filtro-top" id="filtroTop" style="{% if tipo != 'ventas' %}display:none{% endif %}">
-                        <label>Top ventas</label>
-                        <select name="top" class="cfg-select">
+                    <div class="config-field filtro-top" id="filtroTop">
+                        <label for="topSelect">Top ventas</label>
+                        <select name="top" id="topSelect" class="cfg-select" title="Top ventas">
                             <option value="">Todos</option>
                             <option value="3" {% if top == '3' %}selected{% endif %}>Top 3</option>
                             <option value="5" {% if top == '5' %}selected{% endif %}>Top 5</option>
@@ -244,9 +254,9 @@
                     </div>
 
                     <!-- Filtros de inventario -->
-                    <div class="config-field filtro-inv-tipo" id="filtroInvTipo" style="{% if tipo != 'inventario' %}display:none{% endif %}">
-                        <label>Tipo de artículo</label>
-                        <select name="tipo_id" class="cfg-select">
+                    <div class="config-field filtro-inv-tipo" id="filtroInvTipo">
+                        <label for="tipoIdSelect">Tipo de artículo</label>
+                        <select name="tipo_id" id="tipoIdSelect" class="cfg-select" title="Tipo de artículo">
                             <option value="">Todos</option>
                             {% for t in tipos %}
                             <option value="{{ t.id }}" {% if tipo_id|string == t.id|string %}selected{% endif %}>{{ t.nombre }}</option>
@@ -254,9 +264,9 @@
                         </select>
                     </div>
 
-                    <div class="config-field filtro-inv-orden" id="filtroInvOrden" style="{% if tipo not in ['inventario','clientes'] %}display:none{% endif %}">
-                        <label>Ordenar por</label>
-                        <select name="ordenar" class="cfg-select">
+                    <div class="config-field filtro-inv-orden" id="filtroInvOrden">
+                        <label for="invOrdenar">Ordenar por</label>
+                        <select name="ordenar" id="invOrdenar" class="cfg-select" title="Ordenar por">
                             {% if tipo == 'clientes' %}
                             <option value="">Sin orden</option>
                             <option value="alfabetico" {% if ordenar == 'alfabetico' %}selected{% endif %}>Alfabético</option>
@@ -273,19 +283,19 @@
                         </select>
                     </div>
 
-                    <div class="config-field filtro-inv-precio" id="filtroInvPrecioMin" style="{% if tipo != 'inventario' %}display:none{% endif %}">
-                        <label>Precio mín.</label>
-                        <input type="number" name="precio_min" class="cfg-input" placeholder="0" min="0" step="0.01" value="{{ precio_min }}" style="width:100px;">
+                    <div class="config-field filtro-inv-precio" id="filtroInvPrecioMin">
+                        <label for="precioMin">Precio mín.</label>
+                        <input type="number" name="precio_min" id="precioMin" class="cfg-input precio-input" placeholder="0" min="0" step="0.01" value="{{ precio_min }}" title="Precio mínimo">
                     </div>
 
-                    <div class="config-field filtro-inv-precio" id="filtroInvPrecioMax" style="{% if tipo != 'inventario' %}display:none{% endif %}">
-                        <label>Precio máx.</label>
-                        <input type="number" name="precio_max" class="cfg-input" placeholder="∞" min="0" step="0.01" value="{{ precio_max }}" style="width:100px;">
+                    <div class="config-field filtro-inv-precio" id="filtroInvPrecioMax">
+                        <label for="precioMax">Precio máx.</label>
+                        <input type="number" name="precio_max" id="precioMax" class="cfg-input precio-input" placeholder="∞" min="0" step="0.01" value="{{ precio_max }}" title="Precio máximo">
                     </div>
 
-                    <div class="config-field filtro-alfa" id="filtroAlfa" style="{% if not tipo %}display:none{% endif %}">
-                        <label>Orden alfabético</label>
-                        <select name="alfa" class="cfg-select">
+                    <div class="config-field filtro-alfa" id="filtroAlfa">
+                        <label for="alfaSelect">Orden alfabético</label>
+                        <select name="alfa" id="alfaSelect" class="cfg-select" title="Orden alfabético">
                             <option value="">Sin orden</option>
                             <option value="asc" {% if alfa == 'asc' %}selected{% endif %}>A → Z</option>
                             <option value="desc" {% if alfa == 'desc' %}selected{% endif %}>Z → A</option>
@@ -394,7 +404,7 @@
                         {% for d in datos %}
                         <tr>
                             <td>{{ d.nombre }}</td>
-                            <td style="color:rgba(255,255,255,0.45)">{{ d.email }}</td>
+                            <td class="email-muted">{{ d.email }}</td>
                             <td class="r">{{ d.pedidos }}</td>
                             <td class="r bold">${{ "%.2f"|format(d.gasto_total) }}</td>
                         </tr>
@@ -405,17 +415,6 @@
             </div>
 
             <!-- Export bar -->
-            {% set base = "/reportes/exportar?tipo=" ~ tipo %}
-            {% if fecha_inicio %}{% set base = base ~ "&fecha_inicio=" ~ fecha_inicio %}{% endif %}
-            {% if fecha_fin %}{% set base = base ~ "&fecha_fin=" ~ fecha_fin %}{% endif %}
-            {% if estado %}{% set base = base ~ "&estado=" ~ estado %}{% endif %}
-            {% if marca_id %}{% set base = base ~ "&marca_id=" ~ marca_id %}{% endif %}
-            {% if top %}{% set base = base ~ "&top=" ~ top %}{% endif %}
-            {% if tipo_id %}{% set base = base ~ "&tipo_id=" ~ tipo_id %}{% endif %}
-            {% if ordenar %}{% set base = base ~ "&ordenar=" ~ ordenar %}{% endif %}
-            {% if precio_min %}{% set base = base ~ "&precio_min=" ~ precio_min %}{% endif %}
-            {% if precio_max %}{% set base = base ~ "&precio_max=" ~ precio_max %}{% endif %}
-            {% if alfa %}{% set base = base ~ "&alfa=" ~ alfa %}{% endif %}
 
             <div class="export-bar">
                 <span class="export-title"><i data-feather="download"></i> Guardar reporte como:</span>
@@ -439,7 +438,7 @@
 
             {% elif not generado %}
             <!-- Estado inicial -->
-            <div class="empty-state" style="margin-top:2rem;">
+            <div class="empty-state empty-state-top">
                 <i data-feather="file-text"></i>
                 <p>Selecciona un tipo de reporte para ver la vista previa.</p>
             </div>
@@ -451,13 +450,14 @@
     <script>
         feather.replace();
 
-        {% if generado and tipo %}
-        const exportBase = "{{ base }}";
-        {% endif %}
-
         function descargar(formato) {
-            const url = exportBase + '&formato=' + formato;
-            const extMap = { xlsx: 'macuin_{{ tipo }}.xlsx', pdf: 'macuin_{{ tipo }}.pdf', docx: 'macuin_{{ tipo }}.docx' };
+            // Build export URL from current page params (ensures filters match exactly)
+            const params = new URLSearchParams(window.location.search);
+            params.delete('generado');
+            params.set('formato', formato);
+            const url = '/reportes/exportar?' + params.toString();
+            const tipo = params.get('tipo') || 'reporte';
+            const extMap = { xlsx: 'macuin_' + tipo + '.xlsx', pdf: 'macuin_' + tipo + '.pdf', docx: 'macuin_' + tipo + '.docx' };
             const filename = extMap[formato] || ('macuin_reporte.' + formato);
 
             fetch(url, { credentials: 'same-origin' })
@@ -586,6 +586,9 @@
             form.querySelectorAll('[name="' + name + '"]').forEach(el => { el.value = ''; });
             form.submit();
         }
+
+        // Show correct filters on initial load
+        toggleFilters();
     </script>
 </body>
 </html>
