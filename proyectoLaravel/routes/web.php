@@ -35,6 +35,10 @@ Route::get('/pago-exitoso', [TiendaController::class, 'pagoExitoso']);
 Route::get('/direccion', [TiendaController::class, 'direccionForm']);
 Route::post('/direccion', [TiendaController::class, 'direccionPost']);
 
+/* ---------- TELÉFONO ---------- */
+Route::get('/telefono', [TiendaController::class, 'telefonoForm']);
+Route::post('/telefono', [TiendaController::class, 'telefonoPost']);
+
 /* ---------- PEDIDOS ---------- */
 Route::get('/pedidos', [TiendaController::class, 'pedidos']);
 Route::get('/pedidos/{id}', [TiendaController::class, 'detallePedido']);

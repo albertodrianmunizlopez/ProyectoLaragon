@@ -13,6 +13,7 @@ class UsuarioCreate(BaseModel):
     apellidos: str
     email: EmailStr
     password: SecretStr
+    telefono: Optional[str] = None
     id_direccion: Optional[int] = None
     status: str = "usuario"
 
@@ -22,6 +23,15 @@ class UsuarioCreate(BaseModel):
         if not re.match(r'^[A-Za-záéíóúñÁÉÍÓÚÑüÜ\s]+$', v.strip()):
             raise ValueError("Solo se permiten letras y espacios")
         return v.strip()
+
+    @field_validator("telefono")
+    @classmethod
+    def telefono_solo_10_digitos(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            v = v.strip()
+            if v and not re.match(r'^\d{10}$', v):
+                raise ValueError("El teléfono debe ser exactamente 10 dígitos numéricos")
+        return v or None
 
     @field_validator("password")
     @classmethod
@@ -36,9 +46,19 @@ class UsuarioUpdate(BaseModel):
     apellidos: Optional[str] = None
     email: Optional[EmailStr] = None
     password: Optional[SecretStr] = None
+    telefono: Optional[str] = None
     id_direccion: Optional[int] = None
     status: Optional[str] = None
     activo: Optional[bool] = None
+
+    @field_validator("telefono")
+    @classmethod
+    def telefono_solo_10_digitos(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            v = v.strip()
+            if v and not re.match(r'^\d{10}$', v):
+                raise ValueError("El teléfono debe ser exactamente 10 dígitos numéricos")
+        return v or None
 
     @field_validator("password")
     @classmethod
@@ -54,6 +74,7 @@ class UsuarioResponse(BaseModel):
     nombre: str
     apellidos: str
     email: str
+    telefono: Optional[str] = None
     id_direccion: Optional[int] = None
     status: str
     activo: bool

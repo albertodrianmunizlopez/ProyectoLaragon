@@ -84,9 +84,15 @@ def mis_pedidos(
     pedidos, total = crud.get_pedidos(
         db, filtro_estado=estado, id_usuario=current_user.id, skip=skip, limit=limit
     )
+    pedidos_resp = []
+    for p in pedidos:
+        pr = PedidoResponse.model_validate(p)
+        if p.productos and p.productos[0].producto:
+            pr.primer_producto_imagen = p.productos[0].producto.imagen_url
+        pedidos_resp.append(pr)
     return PedidoListResponse(
         total=total,
-        pedidos=[PedidoResponse.model_validate(p) for p in pedidos],
+        pedidos=pedidos_resp,
     )
 
 
@@ -212,6 +218,11 @@ def obtener_datos_reporte(
     estado: str = None,
     marca_id: int = None,
     top: int = None,
+    tipo_id: int = None,
+    ordenar: str = None,
+    precio_min: float = None,
+    precio_max: float = None,
+    alfa: str = None,
     db: Session = Depends(get_db),
     _admin: Usuario = Depends(require_admin),
 ):
@@ -219,13 +230,20 @@ def obtener_datos_reporte(
     if tipo == "ventas":
         datos = crud.get_reporte_ventas(db, fecha_inicio, fecha_fin, marca_id=marca_id, top_n=top)
     elif tipo == "pedidos":
-        datos = crud.get_reporte_pedidos(db, fecha_inicio, fecha_fin, estado)
+        datos = crud.get_reporte_pedidos(db, fecha_inicio, fecha_fin, estado, ordenar=ordenar)
     elif tipo == "inventario":
-        datos = crud.get_reporte_inventario(db)
+        datos = crud.get_reporte_inventario(db, marca_id=marca_id, tipo_id=tipo_id,
+                                            ordenar=ordenar, precio_min=precio_min,
+                                            precio_max=precio_max)
     elif tipo == "clientes":
-        datos = crud.get_reporte_clientes(db)
+        datos = crud.get_reporte_clientes(db, ordenar=ordenar)
     else:
         datos = []
+
+    # Orden alfabético universal
+    if alfa in ("asc", "desc"):
+        campo = "nombre" if tipo in ("inventario", "clientes") else "cliente"
+        datos.sort(key=lambda x: (x.get(campo) or "").lower(), reverse=(alfa == "desc"))
 
     return {"tipo": tipo, "total": len(datos), "datos": datos}
 

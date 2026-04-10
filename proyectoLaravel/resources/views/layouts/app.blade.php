@@ -39,24 +39,34 @@
 
                     <div id="userMenuDropdown" style="position:absolute !important; top:calc(100% + 10px); right:0; width:280px; background:rgba(44,36,36,0.98); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.1); border-radius:14px; box-shadow:0 12px 48px rgba(0,0,0,0.5); opacity:0; visibility:hidden; transform:translateY(-8px) scale(0.97); transition:opacity 0.2s ease, transform 0.2s ease, visibility 0.2s; z-index:300; padding:0.5rem 0; overflow:hidden;">
 
-                        {{-- Header: nombre + email + dirección --}}
+                        {{-- Header: nombre + email + dirección + teléfono --}}
                         @php
                             $dirSession = session('direccion');
                             $tieneDireccion = $dirSession && isset($dirSession['tiene_direccion']) && $dirSession['tiene_direccion'];
+                            $telefono = session('usuario.telefono');
                         @endphp
 
                         <div style="padding:0.8rem 1rem;">
                             <div style="font-family:'Rajdhani',sans-serif; font-weight:700; font-size:0.85rem; color:var(--text); letter-spacing:0.04em;">{{ strtoupper(session('usuario.nombre', '')) }} {{ strtoupper(session('usuario.apellidos', '')) }}</div>
-                            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.15rem;">{{ session('usuario.email', '') }}</div>
+                            <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.75rem; color:var(--text-muted); margin-top:0.15rem;">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                <span>{{ session('usuario.email', '') }}</span>
+                            </div>
                             @if($tieneDireccion)
                                 <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.72rem; color:var(--text-muted); margin-top:0.4rem;">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                                    <span>{{ $dirSession['direccion']['calle'] }} #{{ $dirSession['direccion']['numero'] }}, CP {{ $dirSession['direccion']['codigo_postal'] }}</span>
+                                    <span>{{ $dirSession['direccion']['calle'] }} @if($dirSession['direccion']['numero'])#{{ $dirSession['direccion']['numero'] }}@else S/N @endif, @if(!empty($dirSession['direccion']['colonia']))Col. {{ $dirSession['direccion']['colonia'] }}, @endif @if(!empty($dirSession['direccion']['localidad'])){{ $dirSession['direccion']['localidad'] }}, @endif CP {{ $dirSession['direccion']['codigo_postal'] }}, {{ $dirSession['direccion']['municipio'] }}, {{ $dirSession['direccion']['estado'] }}</span>
                                 </div>
                             @else
                                 <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.72rem; color:var(--text-muted); font-style:italic; margin-top:0.4rem;">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                                     <span>Sin dirección registrada</span>
+                                </div>
+                            @endif
+                            @if($telefono)
+                                <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.72rem; color:var(--text-muted); margin-top:0.3rem;">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.57 3.18 2 2 0 0 1 3.54 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.51a16 16 0 0 0 6 6l.87-.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16z"/></svg>
+                                    <span>{{ $telefono }}</span>
                                 </div>
                             @endif
                         </div>
@@ -67,6 +77,11 @@
                         <a href="/direccion" style="display:flex !important; align-items:center; gap:0.6rem; padding:0.65rem 1rem; font-family:'Rajdhani',sans-serif; font-weight:600; font-size:0.88rem; color:var(--text-muted); text-decoration:none; transition:0.2s; letter-spacing:0.03em;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                             @if($tieneDireccion) Modificar dirección @else Agregar dirección @endif
+                        </a>
+
+                        <a href="/telefono" style="display:flex !important; align-items:center; gap:0.6rem; padding:0.65rem 1rem; font-family:'Rajdhani',sans-serif; font-weight:600; font-size:0.88rem; color:var(--text-muted); text-decoration:none; transition:0.2s; letter-spacing:0.03em;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.57 3.18 2 2 0 0 1 3.54 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.51a16 16 0 0 0 6 6l.87-.87a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16z"/></svg>
+                            @if($telefono) Modificar teléfono @else Agregar teléfono @endif
                         </a>
 
                         <a href="/pedidos" style="display:flex !important; align-items:center; gap:0.6rem; padding:0.65rem 1rem; font-family:'Rajdhani',sans-serif; font-weight:600; font-size:0.88rem; color:var(--text-muted); text-decoration:none; transition:0.2s; letter-spacing:0.03em;">

@@ -33,7 +33,17 @@
             color: #e0d6da; padding: 0.55rem 0.8rem; border-radius: 10px; font-size: 0.85rem;
             min-width: 140px;
         }
-        .cfg-select { cursor: pointer; }
+        .cfg-select {
+            cursor: pointer;
+            -webkit-appearance: none; -moz-appearance: none; appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.4)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 0.7rem center;
+            padding-right: 2rem;
+        }
+        .cfg-select option {
+            background: #1a1218; color: #e0d6da; padding: 0.5rem;
+        }
+        .cfg-select option:checked { background: rgba(233,48,42,0.3); }
         .cfg-select:focus, .cfg-input:focus { outline: none; border-color: rgba(233,48,42,0.5); }
 
         .btn-generate {
@@ -125,7 +135,11 @@
             display: inline-flex; align-items: center; gap: 4px;
             padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.7rem;
             background: rgba(233,48,42,0.1); color: #e9302a; border: 1px solid rgba(233,48,42,0.2);
+            cursor: pointer; transition: all 0.2s;
         }
+        .filter-tag:hover { background: rgba(233,48,42,0.25); border-color: rgba(233,48,42,0.4); }
+        .filter-tag .x { font-size: 0.8rem; margin-left: 2px; opacity: 0.5; }
+        .filter-tag:hover .x { opacity: 1; }
         .filter-tag svg { width: 12px; height: 12px; }
     </style>
 </head>
@@ -199,7 +213,16 @@
                         </select>
                     </div>
 
-                    <div class="config-field filtro-marca" id="filtroMarca" style="{% if tipo != 'ventas' %}display:none{% endif %}">
+                    <div class="config-field filtro-pedidos-orden" id="filtroPedidosOrden" style="{% if tipo != 'pedidos' %}display:none{% endif %}">
+                        <label>Nº artículos</label>
+                        <select name="ordenar" class="cfg-select filtro-pedidos-ordenar">
+                            <option value="">Sin orden</option>
+                            <option value="arts_desc" {% if ordenar == 'arts_desc' %}selected{% endif %}>Mayor a menor</option>
+                            <option value="arts_asc" {% if ordenar == 'arts_asc' %}selected{% endif %}>Menor a mayor</option>
+                        </select>
+                    </div>
+
+                    <div class="config-field filtro-marca" id="filtroMarca" style="{% if tipo not in ['ventas','inventario'] %}display:none{% endif %}">
                         <label>Marca</label>
                         <select name="marca_id" class="cfg-select">
                             <option value="">Todas</option>
@@ -220,21 +243,71 @@
                         </select>
                     </div>
 
-                    <input type="hidden" name="generado" value="1">
+                    <!-- Filtros de inventario -->
+                    <div class="config-field filtro-inv-tipo" id="filtroInvTipo" style="{% if tipo != 'inventario' %}display:none{% endif %}">
+                        <label>Tipo de artículo</label>
+                        <select name="tipo_id" class="cfg-select">
+                            <option value="">Todos</option>
+                            {% for t in tipos %}
+                            <option value="{{ t.id }}" {% if tipo_id|string == t.id|string %}selected{% endif %}>{{ t.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-                    <button type="submit" class="btn-generate">
-                        <i data-feather="play"></i> Generar Reporte
-                    </button>
+                    <div class="config-field filtro-inv-orden" id="filtroInvOrden" style="{% if tipo not in ['inventario','clientes'] %}display:none{% endif %}">
+                        <label>Ordenar por</label>
+                        <select name="ordenar" class="cfg-select">
+                            {% if tipo == 'clientes' %}
+                            <option value="">Sin orden</option>
+                            <option value="alfabetico" {% if ordenar == 'alfabetico' %}selected{% endif %}>Alfabético</option>
+                            <option value="mas_pedidos" {% if ordenar == 'mas_pedidos' %}selected{% endif %}>Más pedidos</option>
+                            <option value="mayor_gasto" {% if ordenar == 'mayor_gasto' %}selected{% endif %}>Mayor gasto</option>
+                            <option value="recientes" {% if ordenar == 'recientes' %}selected{% endif %}>Recientes</option>
+                            {% else %}
+                            <option value="">Sin orden</option>
+                            <option value="mas_vendido" {% if ordenar == 'mas_vendido' %}selected{% endif %}>Más vendido</option>
+                            <option value="precio_asc" {% if ordenar == 'precio_asc' %}selected{% endif %}>Precio: menor a mayor</option>
+                            <option value="precio_desc" {% if ordenar == 'precio_desc' %}selected{% endif %}>Precio: mayor a menor</option>
+                            <option value="alfabetico" {% if ordenar == 'alfabetico' %}selected{% endif %}>Alfabético</option>
+                            {% endif %}
+                        </select>
+                    </div>
+
+                    <div class="config-field filtro-inv-precio" id="filtroInvPrecioMin" style="{% if tipo != 'inventario' %}display:none{% endif %}">
+                        <label>Precio mín.</label>
+                        <input type="number" name="precio_min" class="cfg-input" placeholder="0" min="0" step="0.01" value="{{ precio_min }}" style="width:100px;">
+                    </div>
+
+                    <div class="config-field filtro-inv-precio" id="filtroInvPrecioMax" style="{% if tipo != 'inventario' %}display:none{% endif %}">
+                        <label>Precio máx.</label>
+                        <input type="number" name="precio_max" class="cfg-input" placeholder="∞" min="0" step="0.01" value="{{ precio_max }}" style="width:100px;">
+                    </div>
+
+                    <div class="config-field filtro-alfa" id="filtroAlfa" style="{% if not tipo %}display:none{% endif %}">
+                        <label>Orden alfabético</label>
+                        <select name="alfa" class="cfg-select">
+                            <option value="">Sin orden</option>
+                            <option value="asc" {% if alfa == 'asc' %}selected{% endif %}>A → Z</option>
+                            <option value="desc" {% if alfa == 'desc' %}selected{% endif %}>Z → A</option>
+                        </select>
+                    </div>
+
+                    <input type="hidden" name="generado" value="1">
                 </div>
 
                 {% if generado and tipo %}
                 <div class="active-filters">
                     <span class="filter-tag"><i data-feather="file-text"></i> {{ tipo|capitalize }}</span>
-                    {% if fecha_inicio %}<span class="filter-tag"><i data-feather="calendar"></i> Desde {{ fecha_inicio }}</span>{% endif %}
-                    {% if fecha_fin %}<span class="filter-tag"><i data-feather="calendar"></i> Hasta {{ fecha_fin }}</span>{% endif %}
-                    {% if estado %}<span class="filter-tag"><i data-feather="filter"></i> {{ estado|capitalize }}</span>{% endif %}
-                    {% if marca_id %}<span class="filter-tag"><i data-feather="tag"></i> Marca #{{ marca_id }}</span>{% endif %}
-                    {% if top %}<span class="filter-tag"><i data-feather="trending-up"></i> Top {{ top }}</span>{% endif %}
+                    {% if fecha_inicio %}<span class="filter-tag" onclick="clearFilter('fecha_inicio')"><i data-feather="calendar"></i> Desde {{ fecha_inicio }}<span class="x">×</span></span>{% endif %}
+                    {% if fecha_fin %}<span class="filter-tag" onclick="clearFilter('fecha_fin')"><i data-feather="calendar"></i> Hasta {{ fecha_fin }}<span class="x">×</span></span>{% endif %}
+                    {% if estado %}<span class="filter-tag" onclick="clearFilter('estado')"><i data-feather="filter"></i> {{ estado|capitalize }}<span class="x">×</span></span>{% endif %}
+                    {% if marca_id %}<span class="filter-tag" onclick="clearFilter('marca_id')"><i data-feather="tag"></i> Marca #{{ marca_id }}<span class="x">×</span></span>{% endif %}
+                    {% if top %}<span class="filter-tag" onclick="clearFilter('top')"><i data-feather="trending-up"></i> Top {{ top }}<span class="x">×</span></span>{% endif %}
+                    {% if tipo_id %}<span class="filter-tag" onclick="clearFilter('tipo_id')"><i data-feather="layers"></i> Tipo #{{ tipo_id }}<span class="x">×</span></span>{% endif %}
+                    {% if ordenar %}<span class="filter-tag" onclick="clearFilter('ordenar')"><i data-feather="bar-chart"></i> {{ ordenar|replace('_',' ')|capitalize }}<span class="x">×</span></span>{% endif %}
+                    {% if precio_min %}<span class="filter-tag" onclick="clearFilter('precio_min')"><i data-feather="dollar-sign"></i> Mín ${{ precio_min }}<span class="x">×</span></span>{% endif %}
+                    {% if precio_max %}<span class="filter-tag" onclick="clearFilter('precio_max')"><i data-feather="dollar-sign"></i> Máx ${{ precio_max }}<span class="x">×</span></span>{% endif %}
+                    {% if alfa %}<span class="filter-tag" onclick="clearFilter('alfa')"><i data-feather="type"></i> {{ 'A → Z' if alfa == 'asc' else 'Z → A' }}<span class="x">×</span></span>{% endif %}
                 </div>
                 {% endif %}
             </form>
@@ -338,6 +411,11 @@
             {% if estado %}{% set base = base ~ "&estado=" ~ estado %}{% endif %}
             {% if marca_id %}{% set base = base ~ "&marca_id=" ~ marca_id %}{% endif %}
             {% if top %}{% set base = base ~ "&top=" ~ top %}{% endif %}
+            {% if tipo_id %}{% set base = base ~ "&tipo_id=" ~ tipo_id %}{% endif %}
+            {% if ordenar %}{% set base = base ~ "&ordenar=" ~ ordenar %}{% endif %}
+            {% if precio_min %}{% set base = base ~ "&precio_min=" ~ precio_min %}{% endif %}
+            {% if precio_max %}{% set base = base ~ "&precio_max=" ~ precio_max %}{% endif %}
+            {% if alfa %}{% set base = base ~ "&alfa=" ~ alfa %}{% endif %}
 
             <div class="export-bar">
                 <span class="export-title"><i data-feather="download"></i> Guardar reporte como:</span>
@@ -363,7 +441,7 @@
             <!-- Estado inicial -->
             <div class="empty-state" style="margin-top:2rem;">
                 <i data-feather="file-text"></i>
-                <p>Selecciona un tipo de reporte y haz clic en <strong>Generar Reporte</strong> para ver la vista previa.</p>
+                <p>Selecciona un tipo de reporte para ver la vista previa.</p>
             </div>
             {% endif %}
 
@@ -412,15 +490,101 @@
                 el.style.display = (tipo === 'pedidos') ? '' : 'none';
             });
 
-            // Marca filter: ventas only
+            // Pedidos: ordenar por artículos
+            document.querySelectorAll('.filtro-pedidos-orden').forEach(el => {
+                el.style.display = (tipo === 'pedidos') ? '' : 'none';
+            });
+
+            // Marca filter: ventas & inventario
             document.querySelectorAll('.filtro-marca').forEach(el => {
-                el.style.display = (tipo === 'ventas') ? '' : 'none';
+                el.style.display = (tipo === 'ventas' || tipo === 'inventario') ? '' : 'none';
             });
 
             // Top filter: ventas only
             document.querySelectorAll('.filtro-top').forEach(el => {
                 el.style.display = (tipo === 'ventas') ? '' : 'none';
             });
+
+            // Inventario: tipo de artículo
+            document.querySelectorAll('.filtro-inv-tipo').forEach(el => {
+                el.style.display = (tipo === 'inventario') ? '' : 'none';
+            });
+
+            // Ordenar: inventario & clientes
+            document.querySelectorAll('.filtro-inv-orden').forEach(el => {
+                el.style.display = (tipo === 'inventario' || tipo === 'clientes') ? '' : 'none';
+            });
+
+            // Update inventario/clientes ordenar options based on type
+            var ordenSelect = document.querySelector('.filtro-inv-orden [name="ordenar"]');
+            if (ordenSelect) {
+                if (tipo === 'clientes') {
+                    ordenSelect.innerHTML = '<option value="">Sin orden</option><option value="alfabetico">Alfabético</option><option value="mas_pedidos">Más pedidos</option><option value="mayor_gasto">Mayor gasto</option><option value="recientes">Recientes</option>';
+                } else {
+                    ordenSelect.innerHTML = '<option value="">Sin orden</option><option value="mas_vendido">Más vendido</option><option value="precio_asc">Precio: menor a mayor</option><option value="precio_desc">Precio: mayor a menor</option><option value="alfabetico">Alfabético</option>';
+                }
+            }
+
+            // Disable hidden ordenar selects so only the visible one submits
+            document.querySelectorAll('.filtro-pedidos-ordenar').forEach(el => {
+                el.disabled = (tipo !== 'pedidos');
+                if (tipo !== 'pedidos') el.value = '';
+            });
+            if (ordenSelect) {
+                ordenSelect.disabled = (tipo !== 'inventario' && tipo !== 'clientes');
+                if (tipo !== 'inventario' && tipo !== 'clientes') ordenSelect.value = '';
+            }
+
+            // Inventario: precio min/max
+            document.querySelectorAll('.filtro-inv-precio').forEach(el => {
+                el.style.display = (tipo === 'inventario') ? '' : 'none';
+            });
+
+            // Alfabético: all types
+            document.querySelectorAll('.filtro-alfa').forEach(el => {
+                el.style.display = tipo ? '' : 'none';
+            });
+        }
+
+        // ── Auto-submit on filter change ──
+        (function() {
+            const form = document.querySelector('.config-card');
+            if (!form) return;
+            let debounceTimer = null;
+
+            function autoSubmit(delay) {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => form.submit(), delay);
+            }
+
+            // Selects: submit immediately on change
+            form.querySelectorAll('select').forEach(sel => {
+                sel.addEventListener('change', () => autoSubmit(0));
+            });
+
+            // Date inputs: submit immediately on change
+            form.querySelectorAll('input[type="date"]').forEach(inp => {
+                inp.addEventListener('change', () => autoSubmit(0));
+            });
+
+            // Number inputs (precio): debounce 600ms
+            form.querySelectorAll('input[type="number"]').forEach(inp => {
+                inp.addEventListener('input', () => autoSubmit(600));
+            });
+        })();
+
+        // ── Clear filter from tag click ──
+        function clearFilter(name) {
+            const form = document.querySelector('.config-card');
+            // For selects, reset to empty value
+            const sel = form.querySelector('[name="' + name + '"]');
+            if (sel) {
+                if (sel.tagName === 'SELECT') sel.value = '';
+                else sel.value = '';
+            }
+            // Also check for duplicate ordenar selects
+            form.querySelectorAll('[name="' + name + '"]').forEach(el => { el.value = ''; });
+            form.submit();
         }
     </script>
 </body>

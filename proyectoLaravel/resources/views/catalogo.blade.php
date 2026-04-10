@@ -8,10 +8,19 @@
 </div>
 
 @if(session('carrito_msg'))
-    <div style="background:rgba(60,255,60,.12); border:1px solid rgba(60,255,60,.3); color:#6bff6b; padding:0.75rem 1.2rem; border-radius:10px; margin-bottom:1.5rem; font-size:0.9rem; display:flex; align-items:center; gap:0.5rem;">
+    <div id="toast-carrito" style="position:fixed; top:1.2rem; right:1.2rem; z-index:9999; background:rgba(30,30,30,0.95); border:1px solid rgba(60,255,60,.35); color:#6bff6b; padding:0.85rem 1.3rem; border-radius:12px; font-size:0.9rem; display:flex; align-items:center; gap:0.6rem; box-shadow:0 8px 32px rgba(0,0,0,0.5); backdrop-filter:blur(12px); animation:toastIn 0.35s ease-out;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> {{ session('carrito_msg') }}
-        <a href="/carrito" style="margin-left:auto; color:var(--orange); text-decoration:underline; font-size:0.85rem;">Ver carrito →</a>
     </div>
+    <style>
+        @keyframes toastIn { from { opacity:0; transform:translateY(-16px) scale(0.96); } to { opacity:1; transform:translateY(0) scale(1); } }
+        @keyframes toastOut { from { opacity:1; transform:translateY(0) scale(1); } to { opacity:0; transform:translateY(-16px) scale(0.96); } }
+    </style>
+    <script>
+        setTimeout(function() {
+            var t = document.getElementById('toast-carrito');
+            if (t) { t.style.animation = 'toastOut 0.35s ease-in forwards'; setTimeout(function() { t.remove(); }, 350); }
+        }, 5000);
+    </script>
 @endif
 
 @if(session('carrito_error'))
@@ -35,6 +44,7 @@
                 <input type="hidden" name="precio" value="{{ $producto['precio'] }}">
                 <input type="hidden" name="cantidad" value="1">
                 <input type="hidden" name="stock" value="{{ $producto['cantidad'] }}">
+                <input type="hidden" name="imagen_url" value="{{ $producto['imagen_url'] ?? '' }}">
                 <button type="submit" style="width:36px; height:36px; border-radius:50%; background:rgba(233,48,42,0.9); border:none; color:#fff; cursor:pointer; display:flex !important; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,0,0,0.3);" title="Agregar al carrito">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
                 </button>
@@ -102,6 +112,7 @@
                         <input type="hidden" name="precio" id="modalProductPrice">
                         <input type="hidden" name="cantidad" id="modalProductQty" value="1">
                         <input type="hidden" name="stock" id="modalProductStock">
+                        <input type="hidden" name="imagen_url" id="modalProductImg">
                         <button type="submit" class="btn-primary" style="width:100%; justify-content:center; padding:0.85rem;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg> Agregar al carrito
                         </button>
@@ -207,6 +218,7 @@ function openProductModal(product) {
             document.getElementById('modalProductPrice').value = product.precio;
             document.getElementById('modalProductStock').value = product.cantidad;
             document.getElementById('modalProductQty').value = 1;
+            document.getElementById('modalProductImg').value = product.imagen_url || '';
         } else {
             cartSection.style.display = 'none';
             noStock.style.display = 'block';

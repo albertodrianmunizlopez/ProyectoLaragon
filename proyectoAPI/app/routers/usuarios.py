@@ -89,6 +89,8 @@ def mi_direccion(
             "codigo_postal": direccion.codigo_postal.codigo if direccion.codigo_postal else "",
             "municipio": direccion.municipio.nombre if direccion.municipio else "",
             "estado": direccion.estado.nombre if direccion.estado else "",
+            "localidad": direccion.localidad or "",
+            "colonia": direccion.colonia or "",
         },
     }
 
@@ -138,20 +140,25 @@ def crear_mi_direccion(
         db.add(calle_obj)
         db.flush()
 
-    # Buscar o crear Número
-    num_obj = db.query(NumeroVivienda).filter(NumeroVivienda.numero == datos.get("numero", "")).first()
-    if not num_obj:
-        num_obj = NumeroVivienda(numero=datos.get("numero", "S/N"))
-        db.add(num_obj)
-        db.flush()
+    # Buscar o crear Número (opcional si sin_numero=True)
+    sin_numero = datos.get("sin_numero", False)
+    num_obj = None
+    if not sin_numero and datos.get("numero"):
+        num_obj = db.query(NumeroVivienda).filter(NumeroVivienda.numero == datos.get("numero", "")).first()
+        if not num_obj:
+            num_obj = NumeroVivienda(numero=datos.get("numero", "S/N"))
+            db.add(num_obj)
+            db.flush()
 
     # Crear Dirección
     direccion = Direccion(
         id_calle=calle_obj.id,
-        id_numero_vivienda=num_obj.id,
+        id_numero_vivienda=num_obj.id if num_obj else None,
         id_codigo_postal=cp_obj.id,
         id_municipio=municipio_obj.id,
         id_estado=estado_obj.id,
+        localidad=datos.get("localidad") or None,
+        colonia=datos.get("colonia") or None,
     )
     db.add(direccion)
     db.flush()
@@ -164,6 +171,23 @@ def crear_mi_direccion(
         "message": "Dirección creada y asignada exitosamente",
         "id_direccion": direccion.id,
     }
+
+
+@router.patch("/usuarios/me/telefono")
+def actualizar_mi_telefono(
+    datos: dict,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user),
+):
+    """Actualizar el teléfono del usuario autenticado."""
+    import re as _re
+    telefono = (datos.get("telefono") or "").strip() or None
+    if telefono and not _re.match(r'^\d{10}$', telefono):
+        raise HTTPException(status_code=422, detail="El teléfono debe ser exactamente 10 dígitos numéricos")
+    current_user.telefono = telefono
+    db.commit()
+    db.refresh(current_user)
+    return {"message": "Teléfono actualizado", "telefono": current_user.telefono}
 
 
 # ── CRUD de Usuarios ───────────────────────────────────────

@@ -23,6 +23,7 @@ class Usuario(Base):
     email = Column(String(150), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
     password_plain = Column(String(255), nullable=True)
+    telefono = Column(String(10), nullable=True)
     id_direccion = Column(Integer, ForeignKey("direcciones.id"), nullable=True)
     status = Column(
         Enum(EstatusUsuario, name="estatus_usuario", create_type=False),

@@ -427,10 +427,16 @@ def crear_reporte():
     estado = request.args.get('estado', '')
     marca_id = request.args.get('marca_id', '')
     top = request.args.get('top', '')
+    tipo_id = request.args.get('tipo_id', '')
+    ordenar = request.args.get('ordenar', '')
+    precio_min = request.args.get('precio_min', '')
+    precio_max = request.args.get('precio_max', '')
+    alfa = request.args.get('alfa', '')
     generado = request.args.get('generado', '')
 
-    # Cargar marcas para el dropdown
-    marcas = api_get("/api/catalogos/marcas", token=token) or []
+    # Cargar marcas y tipos para los dropdowns
+    marcas = api_get("/api/productos/catalogos/marcas", token=token) or []
+    tipos = api_get("/api/productos/catalogos/tipos", token=token) or []
 
     datos = []
     total_datos = 0
@@ -447,6 +453,16 @@ def crear_reporte():
             params['marca_id'] = marca_id
         if top:
             params['top'] = top
+        if tipo_id:
+            params['tipo_id'] = tipo_id
+        if ordenar:
+            params['ordenar'] = ordenar
+        if precio_min:
+            params['precio_min'] = precio_min
+        if precio_max:
+            params['precio_max'] = precio_max
+        if alfa:
+            params['alfa'] = alfa
 
         resp = api_get("/api/reportes/datos", params=params, token=token) or {"datos": [], "total": 0}
         datos = resp.get("datos", [])
@@ -459,10 +475,16 @@ def crear_reporte():
                            estado=estado,
                            marca_id=marca_id,
                            top=top,
+                           tipo_id=tipo_id,
+                           ordenar=ordenar,
+                           precio_min=precio_min,
+                           precio_max=precio_max,
+                           alfa=alfa,
                            generado=generado,
                            datos=datos,
                            total_datos=total_datos,
-                           marcas=marcas)
+                           marcas=marcas,
+                           tipos=tipos)
 
 
 @app.route('/reportes/exportar')
@@ -476,6 +498,11 @@ def exportar_reporte():
     estado = request.args.get('estado', '')
     marca_id = request.args.get('marca_id', '')
     top = request.args.get('top', '')
+    tipo_id = request.args.get('tipo_id', '')
+    ordenar = request.args.get('ordenar', '')
+    precio_min = request.args.get('precio_min', '')
+    precio_max = request.args.get('precio_max', '')
+    alfa = request.args.get('alfa', '')
 
     params = {"tipo": tipo}
     if fecha_inicio:
@@ -488,6 +515,16 @@ def exportar_reporte():
         params['marca_id'] = marca_id
     if top:
         params['top'] = top
+    if tipo_id:
+        params['tipo_id'] = tipo_id
+    if ordenar:
+        params['ordenar'] = ordenar
+    if precio_min:
+        params['precio_min'] = precio_min
+    if precio_max:
+        params['precio_max'] = precio_max
+    if alfa:
+        params['alfa'] = alfa
 
     resp = api_get("/api/reportes/datos", params=params, token=token) or {"datos": []}
     datos = resp.get("datos", [])
@@ -1023,6 +1060,7 @@ def admin_editar_usuario(usuario_id):
             "nombre": nombre,
             "apellidos": apellidos,
             "email": nuevo_email,
+            "telefono": request.form.get('telefono', '').strip() or None,
             "status": status_api,
             "activo": nuevo_activo,
         }
@@ -1045,6 +1083,7 @@ def admin_editar_usuario(usuario_id):
         "id": u.get("id"),
         "nombre": f"{u.get('nombre', '')} {u.get('apellidos', '')}",
         "email": u.get("email", ""),
+        "telefono": u.get("telefono", "") or "",
         "rol": "admin" if status_raw in ("administrador", "superadministrador") else "cliente",
         "status_detalle": status_raw,
         "activo": u.get("activo", False),
@@ -1100,6 +1139,7 @@ def admin_nuevo_usuario():
         "apellidos": apellidos,
         "email": datos.get('email', ''),
         "password": datos.get('password', 'macuin2026'),
+        "telefono": datos.get('telefono', '').strip() or None,
         "status": status_api,
     }
     resp, status_code = api_post("/api/usuarios", json_data=json_data, token=token)

@@ -27,18 +27,18 @@
         </a>
     </div>
 
-    <div style="display:flex; gap:3rem; margin-top:4rem; flex-wrap:wrap; justify-content:center;">
-        <div style="text-align:center;">
-            <div style="font-family:'Rajdhani',sans-serif; font-weight:700; font-size:2rem; color:var(--red);">+500</div>
-            <div style="font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted);">Productos</div>
+    <div style="display:flex; gap:4rem; margin-top:4rem; flex-wrap:wrap; justify-content:center; align-items:flex-start;">
+        <div style="text-align:center; min-width:120px;">
+            <div style="font-family:'Rajdhani',sans-serif; font-weight:700; font-size:2rem; color:var(--red);">+{{ count($marcas ?? []) }}</div>
+            <div style="font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted);">Marcas</div>
         </div>
-        <div style="text-align:center;">
-            <div style="font-family:'Rajdhani',sans-serif; font-weight:700; font-size:2rem; color:var(--orange);">24h</div>
-            <div style="font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted);">Envío Express</div>
+        <div style="text-align:center; min-width:120px;">
+            <div style="font-family:'Rajdhani',sans-serif; font-weight:700; font-size:2rem; color:var(--orange); text-transform:uppercase;">Envíos Gratis</div>
+            <div style="font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted);">En todo el país</div>
         </div>
-        <div style="text-align:center;">
-            <div style="font-family:'Rajdhani',sans-serif; font-weight:700; font-size:2rem; color:var(--yellow);">100%</div>
-            <div style="font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted);">Garantizados</div>
+        <div style="text-align:center; min-width:120px;">
+            <div style="font-family:'Rajdhani',sans-serif; font-weight:700; font-size:2rem; color:var(--yellow); text-transform:uppercase;">1 AÑO</div>
+            <div style="font-size:0.78rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted);">De Garantía</div>
         </div>
     </div>
 </div>
@@ -47,8 +47,8 @@
 @if(isset($productosCarrusel) && count($productosCarrusel) > 0)
 <div style="padding:3rem 0 2rem;">
     <div style="display:flex !important; align-items:center; justify-content:space-between; margin-bottom:1.5rem;">
-        <h2 style="font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1.5rem; color:var(--text); margin:0;">Productos <span style="color:var(--orange);">Destacados</span></h2>
-        <a href="/catalogo" style="color:var(--orange); font-size:0.85rem; text-decoration:underline;">Ver todos →</a>
+        <h2 style="font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1.5rem; color:var(--text); margin:0; text-transform:uppercase;">Productos <span style="color:var(--orange);">Destacados</span></h2>
+        <a href="/catalogo" style="color:var(--text-muted); font-size:0.85rem; text-decoration:none; transition:color 0.2s;" onmouseover="this.style.color='var(--yellow)'" onmouseout="this.style.color='var(--text-muted)'">Ver todos →</a>
     </div>
 
     <div style="position:relative !important; display:flex !important; align-items:center; gap:0.5rem;" id="productCarousel">
@@ -61,8 +61,12 @@
                 @foreach($productosCarrusel as $producto)
                 <div class="carousel-slide-item" style="min-width:33.333%; padding:0 0.5rem; box-sizing:border-box; flex-shrink:0 !important;">
                     <div style="background:var(--dark); border:1px solid var(--border); border-radius:14px; overflow:hidden;">
-                        <div style="width:100%; height:160px; background:linear-gradient(135deg, rgba(233,48,42,0.08), rgba(236,123,75,0.05)); display:flex !important; align-items:center; justify-content:center;">
-                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 12 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                        <div style="width:100%; height:160px; background:linear-gradient(135deg, rgba(233,48,42,0.08), rgba(236,123,75,0.05)); display:flex !important; align-items:center; justify-content:center; overflow:hidden;">
+                            @if(!empty($producto['imagen_url']))
+                                <img src="{{ $producto['imagen_url'] }}" alt="{{ $producto['nombre'] }}" style="width:100%; height:100%; object-fit:cover;">
+                            @else
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 12 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                            @endif
                         </div>
                         <div style="padding:0.9rem 1rem;">
                             <div style="font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1rem; color:var(--text); margin-bottom:0.25rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $producto['nombre'] }}</div>

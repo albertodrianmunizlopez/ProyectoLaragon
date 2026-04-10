@@ -57,19 +57,23 @@ class NumeroViviendaResponse(NumeroViviendaBase):
 
 class DireccionCreate(BaseModel):
     id_calle: int
-    id_numero_vivienda: int
+    id_numero_vivienda: Optional[int] = None
     id_codigo_postal: int
     id_municipio: int
     id_estado: int
+    localidad: Optional[str] = None
+    colonia: Optional[str] = None
 
 
 class DireccionResponse(BaseModel):
     id: int
     id_calle: int
-    id_numero_vivienda: int
+    id_numero_vivienda: Optional[int] = None
     id_codigo_postal: int
     id_municipio: int
     id_estado: int
+    localidad: Optional[str] = None
+    colonia: Optional[str] = None
     class Config:
         from_attributes = True
 
@@ -82,6 +86,8 @@ class DireccionCompletaResponse(BaseModel):
     codigo_postal: str
     municipio: str
     estado: str
+    localidad: Optional[str] = None
+    colonia: Optional[str] = None
 
     class Config:
         from_attributes = True

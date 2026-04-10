@@ -2,7 +2,7 @@
 
 @section('contenido')
 
-<div class="auth-wrap">
+<div class="auth-wrap" style="min-height:calc(100vh - 64px); display:flex; align-items:center; justify-content:center; padding:2rem; margin:-2.5rem -2.5rem 0; background:radial-gradient(ellipse 50% 60% at 50% 100%, rgba(233,48,42,0.16) 0%, transparent 70%), var(--surface);">
     <div class="auth-card">
         <div class="auth-brand">MACUIN Autopartes</div>
 

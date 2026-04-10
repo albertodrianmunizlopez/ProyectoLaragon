@@ -47,6 +47,7 @@ class PedidoResponse(BaseModel):
     total: Decimal
     fecha_pedido: datetime
     updated_at: datetime
+    primer_producto_imagen: Optional[str] = None
 
     class Config:
         from_attributes = True

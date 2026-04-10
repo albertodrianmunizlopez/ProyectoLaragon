@@ -139,22 +139,21 @@
                                     </a>
                                     <!-- Cambiar rol -->
                                     <button class="btn-icon" title="Cambiar rol"
-                                        onclick="abrirModalRol({{ u.id }}, '{{ u.nombre }}', '{{ u.rol }}')">
+                                        onclick="abrirModalRol('{{ u.id }}', '{{ u.nombre }}', '{{ u.rol }}')">
                                         <i data-feather="refresh-cw"></i>
                                     </button>
                                     <!-- Toggle estado -->
                                     <form action="/admin/usuarios/toggle-estado" method="POST" style="display:contents;">
                                         <input type="hidden" name="usuario_id" value="{{ u.id }}">
-                                        <button type="submit" class="btn-icon"
-                                            title="{% if u.activo %}Desactivar{% else %}Activar{% endif %}"
-                                            style="{% if u.activo %}color:#f87171;{% else %}color:#4ade80;{% endif %}">
+                                        <button type="submit" class="btn-icon {% if u.activo %}btn-active{% else %}btn-inactive{% endif %}"
+                                            title="{% if u.activo %}Desactivar{% else %}Activar{% endif %}">
                                             <i data-feather="{% if u.activo %}user-x{% else %}user-check{% endif %}"></i>
                                         </button>
                                     </form>
                                     <!-- Eliminar -->
                                     <button class="btn-icon" title="Eliminar usuario"
                                         style="color:#f87171;"
-                                        onclick="confirmarEliminar({{ u.id }}, '{{ u.nombre }}')">
+                                        onclick="confirmarEliminar('{{ u.id }}', '{{ u.nombre }}')">
                                         <i data-feather="trash-2"></i>
                                     </button>
                                 </div>
@@ -209,6 +208,12 @@
                     <span id="email-error" style="display:none; color:#ff6b6b; font-size:0.8rem; margin-top:4px;">
                         Este correo ya está registrado en el sistema.
                     </span>
+                </div>
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label for="nuevo-telefono">Teléfono <span style="color:var(--text-muted); font-size:0.8rem;">(opcional)</span></label>
+                    <input type="tel" id="nuevo-telefono" name="telefono" placeholder="Ej: 6141234567"
+                           pattern="^\d{10}$" maxlength="10" title="Debe ser exactamente 10 dígitos numéricos"
+                           oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                 </div>
                 <div class="form-group" style="margin-bottom:16px;">
                     <label for="nuevo-rol">Rol</label>

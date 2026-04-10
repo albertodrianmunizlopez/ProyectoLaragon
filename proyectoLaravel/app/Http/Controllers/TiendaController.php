@@ -30,7 +30,18 @@ class TiendaController extends Controller
         // Tomar hasta 8 para el carrusel
         $productosCarrusel = array_slice(array_values($productosCarrusel), 0, 8);
 
-        return view('inicio', ['productosCarrusel' => $productosCarrusel]);
+        // Extraer marcas únicas
+        $marcas = collect($productos)
+            ->pluck('marca_nombre')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        return view('inicio', [
+            'productosCarrusel' => $productosCarrusel,
+            'marcas' => $marcas,
+        ]);
     }
 
     // ── Login ───────────────────────────────────────────
@@ -135,12 +146,13 @@ class TiendaController extends Controller
     {
         $carrito = $request->session()->get('carrito', []);
 
-        $productoId = $request->input('producto_id');
-        $nombre     = $request->input('nombre');
-        $codigo     = $request->input('codigo');
-        $precio     = floatval($request->input('precio'));
-        $cantidad   = intval($request->input('cantidad', 1));
-        $stock      = intval($request->input('stock', 999));
+        $productoId  = $request->input('producto_id');
+        $nombre      = $request->input('nombre');
+        $codigo      = $request->input('codigo');
+        $precio      = floatval($request->input('precio'));
+        $cantidad    = intval($request->input('cantidad', 1));
+        $stock       = intval($request->input('stock', 999));
+        $imagen_url  = $request->input('imagen_url', '');
 
         // Verificar stock
         $cantidadEnCarrito = 0;
@@ -172,6 +184,7 @@ class TiendaController extends Controller
                 'codigo'      => $codigo,
                 'precio'      => $precio,
                 'cantidad'    => $cantidad,
+                'imagen_url'  => $imagen_url,
             ];
         }
 
@@ -339,6 +352,9 @@ class TiendaController extends Controller
             'codigo_postal' => $request->input('codigo_postal'),
             'municipio'     => $request->input('municipio'),
             'estado'        => $request->input('estado'),
+            'localidad'     => $request->input('localidad'),
+            'colonia'       => $request->input('colonia'),
+            'sin_numero'    => $request->has('sin_numero'),
         ], $token);
 
         if ($result['status'] === 200) {
@@ -354,6 +370,38 @@ class TiendaController extends Controller
         }
 
         return back()->with('error', 'No se pudo guardar la dirección. Intenta de nuevo.');
+    }
+
+    // ── Teléfono ────────────────────────────────────────
+
+    public function telefonoForm(Request $request)
+    {
+        $token = $request->session()->get('token');
+        if (!$token) {
+            return redirect('/login');
+        }
+
+        $telefono = $request->session()->get('usuario.telefono', '');
+        return view('telefono', ['telefono' => $telefono]);
+    }
+
+    public function telefonoPost(Request $request)
+    {
+        $token = $request->session()->get('token');
+        if (!$token) {
+            return redirect('/login');
+        }
+
+        $telefono = trim($request->input('telefono', ''));
+
+        $result = $this->api->patch('/api/usuarios/me/telefono', ['telefono' => $telefono], $token);
+
+        if (($result['status'] ?? 500) === 200) {
+            $request->session()->put('usuario.telefono', $telefono ?: null);
+            return redirect('/telefono')->with('success', '¡Teléfono actualizado correctamente!');
+        }
+
+        return back()->with('error', 'No se pudo actualizar el teléfono. Intenta de nuevo.');
     }
 
     // ── Pedidos ─────────────────────────────────────────

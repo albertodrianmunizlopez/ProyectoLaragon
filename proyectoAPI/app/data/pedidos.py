@@ -273,7 +273,7 @@ def get_reporte_ventas(db: Session, fecha_inicio=None, fecha_fin=None, marca_id=
     return resultado
 
 
-def get_reporte_pedidos(db: Session, fecha_inicio=None, fecha_fin=None, estado=None) -> list:
+def get_reporte_pedidos(db: Session, fecha_inicio=None, fecha_fin=None, estado=None, ordenar=None) -> list:
     """Reporte de todos los pedidos (incluye cancelados) con opción de filtro por estado."""
     query = db.query(Pedido).options(
         joinedload(Pedido.productos),
@@ -300,16 +300,53 @@ def get_reporte_pedidos(db: Session, fecha_inicio=None, fecha_fin=None, estado=N
             "total": float(p.total),
             "estado": est,
         })
+
+    if ordenar == "arts_desc":
+        resultado.sort(key=lambda x: x["articulos"], reverse=True)
+    elif ordenar == "arts_asc":
+        resultado.sort(key=lambda x: x["articulos"])
+
     return resultado
 
 
-def get_reporte_inventario(db: Session) -> list:
+def get_reporte_inventario(db: Session, marca_id: int = None, tipo_id: int = None,
+                           ordenar: str = None, precio_min: float = None,
+                           precio_max: float = None) -> list:
     """Reporte del inventario actual de productos."""
     from app.models.productos import Producto, TipoAutoparte, Marca
-    productos = db.query(Producto).options(
+    query = db.query(Producto).options(
         joinedload(Producto.tipo_autoparte),
         joinedload(Producto.marca),
-    ).order_by(Producto.nombre).all()
+    )
+
+    if marca_id:
+        query = query.filter(Producto.id_marca == marca_id)
+    if tipo_id:
+        query = query.filter(Producto.id_tipo_autoparte == tipo_id)
+    if precio_min is not None:
+        query = query.filter(Producto.precio >= precio_min)
+    if precio_max is not None:
+        query = query.filter(Producto.precio <= precio_max)
+
+    # Ordenamiento
+    if ordenar == "mas_vendido":
+        from sqlalchemy import func
+        from app.models.pedidos import DetallePedido
+        sub = db.query(
+            DetallePedido.id_producto,
+            func.sum(DetallePedido.cantidad).label("total_vendido")
+        ).group_by(DetallePedido.id_producto).subquery()
+        query = query.outerjoin(sub, Producto.id == sub.c.id_producto).order_by(sub.c.total_vendido.desc().nullslast())
+    elif ordenar == "precio_asc":
+        query = query.order_by(Producto.precio.asc())
+    elif ordenar == "precio_desc":
+        query = query.order_by(Producto.precio.desc())
+    elif ordenar == "alfabetico":
+        query = query.order_by(Producto.nombre.asc())
+    else:
+        query = query.order_by(Producto.nombre)
+
+    productos = query.all()
 
     resultado = []
     for p in productos:
@@ -326,7 +363,7 @@ def get_reporte_inventario(db: Session) -> list:
     return resultado
 
 
-def get_reporte_clientes(db: Session) -> list:
+def get_reporte_clientes(db: Session, ordenar: str = None) -> list:
     """Reporte de clientes registrados con su número de pedidos y gasto total."""
     from app.models.usuarios import Usuario
     from sqlalchemy import func
@@ -347,5 +384,15 @@ def get_reporte_clientes(db: Session) -> list:
             "pedidos": num_pedidos,
             "gasto_total": float(gasto),
         })
+
+    if ordenar == "mas_pedidos":
+        resultado.sort(key=lambda x: x["pedidos"], reverse=True)
+    elif ordenar == "mayor_gasto":
+        resultado.sort(key=lambda x: x["gasto_total"], reverse=True)
+    elif ordenar == "alfabetico":
+        resultado.sort(key=lambda x: x["nombre"])
+    elif ordenar == "recientes":
+        resultado.reverse()
+
     return resultado
 

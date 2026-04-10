@@ -65,10 +65,12 @@ class Direccion(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     id_calle = Column(Integer, ForeignKey("calles.id"), nullable=False)
-    id_numero_vivienda = Column(Integer, ForeignKey("numeros_vivienda.id"), nullable=False)
+    id_numero_vivienda = Column(Integer, ForeignKey("numeros_vivienda.id"), nullable=True)
     id_codigo_postal = Column(Integer, ForeignKey("codigos_postales.id"), nullable=False)
     id_municipio = Column(Integer, ForeignKey("municipios.id"), nullable=False)
     id_estado = Column(Integer, ForeignKey("estados.id"), nullable=False)
+    localidad = Column(String(200), nullable=True)
+    colonia = Column(String(200), nullable=True)
 
     # Relaciones
     calle = relationship("Calle", back_populates="direcciones")

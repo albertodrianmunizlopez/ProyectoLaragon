@@ -74,10 +74,12 @@ CREATE TABLE numeros_vivienda (
 CREATE TABLE direcciones (
     id                 SERIAL PRIMARY KEY,
     id_calle           INT    NOT NULL REFERENCES calles(id)            ON DELETE RESTRICT,
-    id_numero_vivienda INT    NOT NULL REFERENCES numeros_vivienda(id)  ON DELETE RESTRICT,
+    id_numero_vivienda INT             REFERENCES numeros_vivienda(id)  ON DELETE RESTRICT,
     id_codigo_postal   INT    NOT NULL REFERENCES codigos_postales(id)  ON DELETE RESTRICT,
     id_municipio       INT    NOT NULL REFERENCES municipios(id)        ON DELETE RESTRICT,
-    id_estado          INT    NOT NULL REFERENCES estados(id)           ON DELETE RESTRICT
+    id_estado          INT    NOT NULL REFERENCES estados(id)           ON DELETE RESTRICT,
+    localidad          VARCHAR(200),
+    colonia            VARCHAR(200)
 );
 
 CREATE INDEX idx_direcciones_estado    ON direcciones(id_estado);
@@ -96,6 +98,7 @@ CREATE TABLE usuarios (
     email         VARCHAR(150)     NOT NULL UNIQUE,
     password_hash VARCHAR(255)     NOT NULL,
     password_plain VARCHAR(255),
+    telefono      VARCHAR(10),
     id_direccion  INT              REFERENCES direcciones(id) ON DELETE SET NULL,
     status        estatus_usuario  NOT NULL DEFAULT 'usuario',
     activo        BOOLEAN          NOT NULL DEFAULT TRUE,

@@ -20,10 +20,21 @@
 @endif
 
 @forelse($pedidos as $pedido)
-<div class="order-card">
-    <div>
-        <div class="order-id">Pedido {{ $pedido['codigo_pedido'] ?? '#' . $pedido['id'] }}</div>
-        <div class="order-meta">{{ \Carbon\Carbon::parse($pedido['fecha_pedido'])->format('d \\d\\e F \\d\\e Y') }}</div>
+<div style="background:var(--dark); border:1px solid var(--border); border-radius:14px; padding:1.5rem 1.75rem; margin-bottom:1rem; display:flex; align-items:center; gap:1.25rem; position:relative; overflow:hidden; transition:border-color 0.2s;">
+    <div style="position:absolute; left:0; top:0; bottom:0; width:3px; background:linear-gradient(180deg, var(--red), var(--orange));"></div>
+
+    {{-- Imagen del primer producto --}}
+    @if(!empty($pedido['primer_producto_imagen']))
+        <img src="{{ $pedido['primer_producto_imagen'] }}" alt="Producto" style="width:64px; height:64px; object-fit:cover; border-radius:10px; flex-shrink:0; background:var(--dark-2);" onerror="this.style.display='none'">
+    @else
+        <div style="width:64px; height:64px; border-radius:10px; flex-shrink:0; background:var(--dark-2); display:flex; align-items:center; justify-content:center;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        </div>
+    @endif
+
+    <div style="flex:1;">
+        <div style="font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1.1rem; color:var(--text); margin-bottom:0.25rem;">Pedido {{ $pedido['codigo_pedido'] ?? '#' . $pedido['id'] }}</div>
+        <div style="font-size:0.82rem; color:var(--text-muted); margin-bottom:0.6rem;">{{ \Carbon\Carbon::parse($pedido['fecha_pedido'])->format('d \\d\\e F \\d\\e Y') }}</div>
         @php
             $estado = $pedido['estado_pedido'] ?? 'pendiente';
             $colores = [
@@ -36,18 +47,18 @@
             ];
             $estilo = $colores[$estado] ?? 'background:rgba(255,255,255,.1); color:var(--text-muted);';
         @endphp
-        <span class="order-status" style="{{ $estilo }} padding:0.3rem 0.8rem; border-radius:6px; font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">
+        <span style="{{ $estilo }} padding:0.3rem 0.8rem; border-radius:6px; font-size:0.78rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; display:inline-block;">
             {{ ucfirst(str_replace('_', ' ', $estado)) }}
         </span>
     </div>
 
-    <div class="order-actions" style="display:flex; align-items:center; gap:1rem;">
+    <div style="display:flex; align-items:center; gap:1rem;">
         <div style="text-align:right;">
             <div style="font-family:'Rajdhani',sans-serif; font-weight:700; font-size:1.3rem; color:var(--orange);">
                 ${{ number_format($pedido['total'], 2) }} MXN
             </div>
         </div>
-        <a href="/pedidos/{{ $pedido['id'] }}" class="btn-primary" style="padding:0.6rem 1.4rem; font-size:0.85rem; text-decoration:none;">
+        <a href="/pedidos/{{ $pedido['id'] }}" style="font-family:'Rajdhani',sans-serif; font-weight:700; font-size:0.85rem; letter-spacing:0.1em; text-transform:uppercase; background:var(--red); color:#fff; border:none; border-radius:8px; padding:0.6rem 1.4rem; text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem; transition:background 0.2s, box-shadow 0.2s;">
             Ver detalles
         </a>
     </div>

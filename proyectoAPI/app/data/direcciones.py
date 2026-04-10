@@ -97,6 +97,12 @@ def direccion_a_texto(db: Session, direccion: Direccion) -> str:
         partes.append(direccion.calle.nombre)
     if direccion.numero_vivienda:
         partes.append(f"#{direccion.numero_vivienda.numero}")
+    else:
+        partes.append("S/N")
+    if direccion.colonia:
+        partes.append(f"Col. {direccion.colonia}")
+    if direccion.localidad:
+        partes.append(direccion.localidad)
     if direccion.codigo_postal:
         partes.append(f"CP {direccion.codigo_postal.codigo}")
     if direccion.municipio:
