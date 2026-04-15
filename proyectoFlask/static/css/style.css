@@ -2493,3 +2493,91 @@ select.form-input-field {
     margin: 0;
     font-weight: 500;
 }
+/* ─── GLOBAL SELECT DARK THEME ─────────────────────────── */
+select {
+    color-scheme: dark;
+}
+
+select option {
+    background-color: #3A2E2E;
+    color: #F0EDED;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 500;
+}
+
+/* cfg-select — crear_reporte */
+.cfg-select {
+    width: 100%;
+    padding: 0.6rem 2.5rem 0.6rem 1rem;
+    background: var(--dark-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239E9298' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    cursor: pointer;
+    transition: border-color var(--transition), box-shadow var(--transition);
+    outline: none;
+    color-scheme: dark;
+}
+.cfg-select:focus {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px var(--red-glow);
+    background-color: var(--dark-3);
+}
+
+/* status-select — detalle_pedido */
+.status-select {
+    padding: 0.6rem 2.5rem 0.6rem 1rem;
+    background: var(--dark-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239E9298' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    cursor: pointer;
+    transition: border-color var(--transition), box-shadow var(--transition);
+    outline: none;
+    min-width: 180px;
+    color-scheme: dark;
+}
+.status-select:focus {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px var(--red-glow);
+    background-color: var(--dark-3);
+}
+
+/* pedidos-filter-select — pedidos_dashboard */
+.pedidos-filter-select {
+    background: var(--dark-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 0.45rem 2.2rem 0.45rem 0.7rem;
+    border-radius: var(--radius-sm);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239E9298' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    transition: border-color var(--transition), box-shadow var(--transition);
+    outline: none;
+    color-scheme: dark;
+}
+.pedidos-filter-select:focus {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px var(--red-glow);
+    background-color: var(--dark-3);
+}

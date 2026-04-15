@@ -57,6 +57,9 @@ def get_productos(
     filtro_tipo: Optional[int] = None,
     filtro_marca: Optional[int] = None,
     orden: Optional[str] = None,
+    busqueda: Optional[str] = None,
+    precio_min: Optional[float] = None,
+    precio_max: Optional[float] = None,
     skip: int = 0,
     limit: int = 100,
 ) -> List[Producto]:
@@ -65,10 +68,21 @@ def get_productos(
 
     if filtro_estatus:
         query = query.filter(Producto.estatus_producto == filtro_estatus)
+    else:
+        query = query.filter(Producto.estatus_producto != EstatusProducto.descontinuado)
     if filtro_tipo:
         query = query.filter(Producto.id_tipo_autoparte == filtro_tipo)
     if filtro_marca:
         query = query.filter(Producto.id_marca == filtro_marca)
+    if busqueda:
+        term = f"%{busqueda.strip()}%"
+        query = query.filter(
+            Producto.nombre.ilike(term) | Producto.codigo.ilike(term)
+        )
+    if precio_min is not None:
+        query = query.filter(Producto.precio >= precio_min)
+    if precio_max is not None:
+        query = query.filter(Producto.precio <= precio_max)
 
     # Ordenamiento
     if orden == "nombre_asc":

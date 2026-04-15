@@ -72,20 +72,41 @@
             </header>
 
             <!-- Tabs de Filtrado -->
-            <div class="tab-filter">
-                <a href="/admin/usuarios?filtro=todos" class="tab-btn {% if filtro == 'todos' %}active{% endif %}">
+            <div class="tab-filter" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <!-- Buscador -->
+                <form method="GET" action="/admin/usuarios" id="formBusqueda" style="flex:1; min-width:220px; max-width:340px;">
+                    <input type="hidden" name="filtro" value="{{ filtro }}">
+                    <div class="search-input-wrapper" style="margin:0;">
+                        <i data-feather="search"></i>
+                        <input
+                            type="text"
+                            name="busqueda"
+                            class="search-input"
+                            placeholder="Buscar por nombre o correo…"
+                            value="{{ busqueda }}"
+                            oninput="clearTimeout(window._bqTimer); window._bqTimer = setTimeout(() => document.getElementById('formBusqueda').submit(), 400)"
+                            autocomplete="off"
+                        >
+                        {% if busqueda %}
+                        <a href="/admin/usuarios?filtro={{ filtro }}" class="search-clear-btn" title="Limpiar búsqueda" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); color:var(--text-muted); text-decoration:none; font-size:1.1rem; line-height:1;">&times;</a>
+                        {% endif %}
+                    </div>
+                </form>
+
+                <!-- Tabs de rol -->
+                <a href="/admin/usuarios?filtro=todos{% if busqueda %}&busqueda={{ busqueda }}{% endif %}" class="tab-btn {% if filtro == 'todos' %}active{% endif %}">
                     Todos
                     <span class="tab-count">{{ totales.todos }}</span>
                 </a>
-                <a href="/admin/usuarios?filtro=superadmin" class="tab-btn {% if filtro == 'superadmin' %}active{% endif %}">
+                <a href="/admin/usuarios?filtro=superadmin{% if busqueda %}&busqueda={{ busqueda }}{% endif %}" class="tab-btn {% if filtro == 'superadmin' %}active{% endif %}">
                     <i data-feather="star"></i> Superadmins
                     <span class="tab-count" style="background:rgba(233,48,42,0.3); color:#ff6b6b;">{{ totales.superadmin }}</span>
                 </a>
-                <a href="/admin/usuarios?filtro=admin" class="tab-btn {% if filtro == 'admin' %}active{% endif %}">
+                <a href="/admin/usuarios?filtro=admin{% if busqueda %}&busqueda={{ busqueda }}{% endif %}" class="tab-btn {% if filtro == 'admin' %}active{% endif %}">
                     <i data-feather="shield"></i> Administradores
                     <span class="tab-count admin-count">{{ totales.admin }}</span>
                 </a>
-                <a href="/admin/usuarios?filtro=cliente" class="tab-btn {% if filtro == 'cliente' %}active{% endif %}">
+                <a href="/admin/usuarios?filtro=cliente{% if busqueda %}&busqueda={{ busqueda }}{% endif %}" class="tab-btn {% if filtro == 'cliente' %}active{% endif %}">
                     <i data-feather="user"></i> Clientes Laravel
                     <span class="tab-count cliente-count">{{ totales.cliente }}</span>
                 </a>

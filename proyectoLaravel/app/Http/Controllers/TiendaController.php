@@ -129,9 +129,31 @@ class TiendaController extends Controller
     public function catalogo(Request $request)
     {
         $token = $request->session()->get('token');
-        $productos = $this->api->getProductos($token);
 
-        return view('catalogo', ['productos' => $productos]);
+        // Build API query params from request
+        $params = [];
+        if ($request->filled('busqueda'))   $params['busqueda']   = $request->input('busqueda');
+        if ($request->filled('tipo'))       $params['tipo']       = $request->input('tipo');
+        if ($request->filled('marca'))      $params['marca']      = $request->input('marca');
+        if ($request->filled('precio_min')) $params['precio_min'] = $request->input('precio_min');
+        if ($request->filled('precio_max')) $params['precio_max'] = $request->input('precio_max');
+        if ($request->filled('orden'))      $params['orden']      = $request->input('orden');
+
+        $productos = $this->api->getProductos($token, $params);
+        $tipos     = $this->api->get('/api/productos/catalogos/tipos', $token) ?? [];
+        $marcas    = $this->api->get('/api/productos/catalogos/marcas', $token) ?? [];
+
+        return view('catalogo', [
+            'productos'  => $productos,
+            'tipos'      => $tipos,
+            'marcas'     => $marcas,
+            'busqueda'   => $request->input('busqueda', ''),
+            'filtroTipo' => $request->input('tipo', ''),
+            'filtroMarca'=> $request->input('marca', ''),
+            'precioMin'  => $request->input('precio_min', ''),
+            'precioMax'  => $request->input('precio_max', ''),
+            'orden'      => $request->input('orden', ''),
+        ]);
     }
 
     // ── Carrito ─────────────────────────────────────────
@@ -189,6 +211,9 @@ class TiendaController extends Controller
         }
 
         $request->session()->put('carrito', $carrito);
+        if ($request->input('redirect_checkout')) {
+            return redirect('/checkout');
+        }
         return back()->with('carrito_msg', "\"{$nombre}\" agregado al carrito");
     }
 

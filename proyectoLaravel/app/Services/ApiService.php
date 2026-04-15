@@ -92,9 +92,9 @@ class ApiService
 
     // ── Productos ───────────────────────────────────────
 
-    public function getProductos(?string $token = null)
+    public function getProductos(?string $token = null, array $params = [])
     {
-        return $this->get('/api/productos', $token) ?? [];
+        return $this->get('/api/productos', $token, $params) ?? [];
     }
 
     public function getProducto(int $id, ?string $token = null)

@@ -11,13 +11,21 @@ from app.security.auth import hash_password
 def get_usuarios(
     db: Session,
     filtro_status: Optional[str] = None,
+    busqueda: Optional[str] = None,
     skip: int = 0,
     limit: int = 100,
 ) -> List[Usuario]:
-    """Obtener lista de usuarios con filtro opcional por status."""
+    """Obtener lista de usuarios con filtro opcional por status y búsqueda por nombre/email."""
     query = db.query(Usuario)
     if filtro_status:
         query = query.filter(Usuario.status == filtro_status)
+    if busqueda:
+        term = f"%{busqueda}%"
+        query = query.filter(
+            (Usuario.nombre.ilike(term)) |
+            (Usuario.apellidos.ilike(term)) |
+            (Usuario.email.ilike(term))
+        )
     return query.offset(skip).limit(limit).all()
 
 

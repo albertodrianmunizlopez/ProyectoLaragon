@@ -195,13 +195,14 @@ def actualizar_mi_telefono(
 @router.get("/usuarios", response_model=List[UsuarioResponse])
 def listar_usuarios(
     filtro: str = None,
+    busqueda: str = None,
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
     _admin: Usuario = Depends(require_admin),
 ):
-    """Listar usuarios (solo admins). Filtro opcional: 'administrador', 'usuario'."""
-    return crud.get_usuarios(db, filtro_status=filtro, skip=skip, limit=limit)
+    """Listar usuarios (solo admins). Filtro opcional: 'administrador', 'usuario'. Búsqueda por nombre/email."""
+    return crud.get_usuarios(db, filtro_status=filtro, busqueda=busqueda, skip=skip, limit=limit)
 
 
 @router.get("/usuarios/stats")

@@ -45,6 +45,18 @@
                     </header>
 
                     <form action="/autoparte/guardar" method="POST" id="autoparteForm">
+
+                        {% if errores %}
+                        <div style="background:rgba(233,48,42,0.1); border:1px solid rgba(233,48,42,0.4); border-radius:var(--radius-sm); padding:1rem 1.25rem; margin-bottom:1.5rem; display:flex; gap:0.75rem; align-items:flex-start;">
+                            <i data-feather="alert-circle" style="width:18px; height:18px; color:var(--red); flex-shrink:0; margin-top:2px;"></i>
+                            <div>
+                                <div style="font-family:'Rajdhani',sans-serif; font-weight:700; font-size:0.85rem; color:var(--red); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:0.35rem;">No se pudo guardar</div>
+                                <ul style="margin:0; padding-left:1.1rem; color:#f87171; font-size:0.875rem; line-height:1.6;">
+                                    {% for e in errores %}<li>{{ e }}</li>{% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                        {% endif %}
                         <div class="form-grid-2">
 
                             <!-- Código SKU (auto-generado) -->
@@ -72,7 +84,7 @@
 
                             <!-- Tipo de Autoparte -->
                             <div class="form-group">
-                                <label for="id_tipo_autoparte">Tipo de Autoparte</label>
+                                <label for="id_tipo_autoparte">Tipo de Autoparte <span style="color:var(--red);">*</span></label>
                                 <select id="id_tipo_autoparte" name="id_tipo_autoparte" onchange="toggleNuevoTipo(this)">
                                     <option value="">— Sin tipo —</option>
                                     {% for t in tipos %}
@@ -87,7 +99,7 @@
 
                             <!-- Marca -->
                             <div class="form-group">
-                                <label for="id_marca">Marca</label>
+                                <label for="id_marca">Marca <span style="color:var(--red);">*</span></label>
                                 <select id="id_marca" name="id_marca" onchange="toggleNuevaMarca(this)">
                                     <option value="">— Sin marca —</option>
                                     {% for m in marcas %}
@@ -142,7 +154,7 @@
 
                             <!-- Descripción -->
                             <div class="form-group full-width">
-                                <label for="descripcion">Descripción detallada</label>
+                                <label for="descripcion">Descripción detallada <span style="color:var(--red);">*</span></label>
                                 <textarea id="descripcion" name="descripcion" rows="4"
                                           placeholder="Especificaciones técnicas, compatibilidad con modelos, etc."
                                 >{{ autoparte.descripcion if autoparte else '' }}</textarea>

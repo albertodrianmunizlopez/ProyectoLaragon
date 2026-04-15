@@ -110,9 +110,15 @@ def login():
         })
 
         if status == 200 and resp and "access_token" in resp:
-            session["token"] = resp["access_token"]
-            session["usuario"] = resp.get("usuario", {})
-            return redirect(url_for('inventario'))
+            usuario = resp.get("usuario", {})
+            if usuario.get("status") == "administrador":
+                session["token"] = resp["access_token"]
+                session["usuario"] = usuario
+                return redirect(url_for('inventario'))
+            elif usuario.get("status") == "superadministrador":
+                return render_template('login.html', error="Los superadministradores deben ingresar desde el portal de administración.")
+            else:
+                return render_template('login.html', error="Solo administradores pueden acceder a este portal.")
         else:
             return render_template('login.html', error="Credenciales incorrectas")
 
@@ -125,10 +131,15 @@ def login():
 
 @app.route('/inventario')
 def inventario():
+    if not get_token():
+        return redirect(url_for('login'))
     # Leer filtros y orden de la URL
     filtro_tipo = request.args.get('tipo', '')
     filtro_marca = request.args.get('marca', '')
     orden = request.args.get('orden', '')
+    busqueda = request.args.get('busqueda', '')
+    precio_min = request.args.get('precio_min', '')
+    precio_max = request.args.get('precio_max', '')
 
     # Construir parámetros para la API
     params = {}
@@ -138,6 +149,12 @@ def inventario():
         params['marca'] = filtro_marca
     if orden:
         params['orden'] = orden
+    if busqueda:
+        params['busqueda'] = busqueda
+    if precio_min:
+        params['precio_min'] = precio_min
+    if precio_max:
+        params['precio_max'] = precio_max
 
     # Obtener productos y catálogos de la API
     productos = api_get("/api/productos", params=params) or []
@@ -162,11 +179,16 @@ def inventario():
                            marcas=marcas,
                            filtro_tipo=filtro_tipo,
                            filtro_marca=filtro_marca,
-                           orden=orden)
+                           orden=orden,
+                           busqueda=busqueda,
+                           precio_min=precio_min,
+                           precio_max=precio_max)
 
 
 @app.route('/autoparte/nueva')
 def nueva_autoparte():
+    if not get_token():
+        return redirect(url_for('login'))
     tipos = api_get("/api/productos/catalogos/tipos") or []
     marcas = api_get("/api/productos/catalogos/marcas") or []
     return render_template('formulario_autoparte.html', autoparte=None, tipos=tipos, marcas=marcas)
@@ -174,6 +196,8 @@ def nueva_autoparte():
 
 @app.route('/autoparte/editar/<codigo>')
 def editar_autoparte(codigo):
+    if not get_token():
+        return redirect(url_for('login'))
     producto = api_get(f"/api/productos/buscar", params={"codigo": codigo})
     tipos = api_get("/api/productos/catalogos/tipos") or []
     marcas = api_get("/api/productos/catalogos/marcas") or []
@@ -197,6 +221,8 @@ def editar_autoparte(codigo):
 
 @app.route('/autoparte/guardar', methods=['POST'])
 def guardar_autoparte():
+    if not get_token():
+        return redirect(url_for('login'))
     token = get_token() or get_admin_token()
     datos_form = request.form
 
@@ -238,20 +264,60 @@ def guardar_autoparte():
         "imagen_url": datos_form.get('imagen_url', '').strip() or None,
         "id_tipo_autoparte": id_tipo,
         "id_marca": id_marca,
-        "cantidad": int(datos_form.get('stock', 0)),
+        "cantidad": int(datos_form.get('stock', 0) or 0),
         "estatus_producto": "en_stock",
-        "precio": float(datos_form.get('precio', 0)),
+        "precio": float(datos_form.get('precio', 0) or 0),
     }
+
+    def _extraer_errores(resp_json):
+        """Extrae mensajes de error de la respuesta 422 de FastAPI."""
+        errores = []
+        if isinstance(resp_json, dict):
+            detail = resp_json.get('detail', '')
+            if isinstance(detail, str):
+                errores.append(detail)
+            elif isinstance(detail, list):
+                for e in detail:
+                    msg = e.get('msg', '') if isinstance(e, dict) else str(e)
+                    # Traducciones comunes
+                    if 'Field required' in msg or 'field required' in msg:
+                        loc = e.get('loc', [])
+                        campo = loc[-1] if loc else 'campo'
+                        errores.append(f"El campo '{campo}' es obligatorio")
+                    else:
+                        errores.append(msg)
+        return errores or ['Error al guardar. Verifica que todos los campos estén completos.']
+
+    def _re_render(errores):
+        tipos = api_get("/api/productos/catalogos/tipos") or []
+        marcas = api_get("/api/productos/catalogos/marcas") or []
+        autoparte_form = {
+            "codigo": codigo or None,
+            "nombre": datos_form.get('nombre', ''),
+            "imagen_url": datos_form.get('imagen_url', ''),
+            "id_tipo_autoparte": id_tipo,
+            "id_marca": id_marca,
+            "stock": datos_form.get('stock', 0),
+            "precio": datos_form.get('precio', 0),
+            "descripcion": datos_form.get('descripcion', ''),
+        }
+        return render_template('formulario_autoparte.html',
+                               autoparte=autoparte_form if codigo else None,
+                               tipos=tipos, marcas=marcas, errores=errores)
 
     if codigo:
         # Editando un producto existente
         existente = api_get(f"/api/productos/buscar", params={"codigo": codigo})
         if existente and existente.get("id"):
             json_data["codigo"] = codigo
-            api_put(f"/api/productos/{existente['id']}", json_data=json_data, token=token)
+            resp, st = api_put(f"/api/productos/{existente['id']}", json_data=json_data, token=token)
+            if st not in (200, 201):
+                return _re_render(_extraer_errores(resp))
     else:
         # Nuevo producto — el código lo genera la API automáticamente
-        api_post("/api/productos", json_data=json_data, token=token)
+        resp, st = api_post("/api/productos", json_data=json_data, token=token)
+        if st not in (200, 201):
+            return _re_render(_extraer_errores(resp))
 
     return redirect(url_for('inventario'))
 
@@ -272,6 +338,8 @@ def eliminar_autoparte(codigo):
 
 @app.route('/pedidos')
 def dashboard_pedidos():
+    if not get_token():
+        return redirect(url_for('login'))
     token = get_token() or get_admin_token()
 
     # Leer filtros de la URL
@@ -407,6 +475,8 @@ def actualizar_estatus_pedido():
 
 @app.route('/reportes')
 def vista_reportes():
+    if not get_token():
+        return redirect(url_for('login'))
     token = get_token() or get_admin_token()
 
     kpis = api_get("/api/reportes/kpis", token=token) or {
@@ -420,6 +490,8 @@ def vista_reportes():
 
 @app.route('/reportes/crear')
 def crear_reporte():
+    if not get_token():
+        return redirect(url_for('login'))
     token = get_token() or get_admin_token()
     tipo = request.args.get('tipo', '')
     fecha_inicio = request.args.get('fecha_inicio', '')
@@ -954,12 +1026,14 @@ def admin_login():
         if status == 200 and resp and "access_token" in resp:
             usuario = resp.get("usuario", {})
             # Verificar que sea admin o superadmin
-            if usuario.get("status") in ("administrador", "superadministrador"):
+            if usuario.get("status") == "superadministrador":
                 session["admin_token"] = resp["access_token"]
                 session["admin_usuario"] = usuario
                 return redirect(url_for('admin_home'))
+            elif usuario.get("status") == "administrador":
+                mensaje_error = 'Los administradores deben ingresar desde el portal de inventario.'
             else:
-                mensaje_error = 'No tienes permisos de administrador.'
+                mensaje_error = 'No tienes permisos de superadministrador.'
         else:
             mensaje_error = 'Credenciales incorrectas. Verifica tu correo y contraseña.'
 
@@ -989,6 +1063,7 @@ def admin_usuarios():
         return redirect(url_for('admin_login'))
 
     filtro = request.args.get('filtro', 'todos')
+    busqueda = request.args.get('busqueda', '').strip()
 
     # Mapear filtros del template a los de la API
     filtro_api = None
@@ -999,8 +1074,15 @@ def admin_usuarios():
     elif filtro == 'cliente':
         filtro_api = 'usuario'
 
+    # Construir params para la API
+    params = {}
+    if filtro_api:
+        params['filtro'] = filtro_api
+    if busqueda:
+        params['busqueda'] = busqueda
+
     # Obtener usuarios de la API
-    usuarios_raw = api_get("/api/usuarios", token=token, params={"filtro": filtro_api} if filtro_api else None) or []
+    usuarios_raw = api_get("/api/usuarios", token=token, params=params if params else None) or []
 
     # Adaptar formato para la plantilla
     usuarios = []
@@ -1031,7 +1113,7 @@ def admin_usuarios():
     }
 
     mensaje = request.args.get('msg', '')
-    return render_template('admin_usuarios.html', usuarios=usuarios, filtro=filtro, totales=totales, mensaje=mensaje)
+    return render_template('admin_usuarios.html', usuarios=usuarios, filtro=filtro, totales=totales, mensaje=mensaje, busqueda=busqueda)
 
 
 @app.route('/admin/usuarios/editar/<int:usuario_id>', methods=['GET', 'POST'])

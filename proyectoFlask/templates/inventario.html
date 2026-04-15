@@ -38,58 +38,92 @@
                     <p class="page-description">Administra el inventario, precios y detalles de las piezas.</p>
                 </div>
                 <div class="header-actions">
-                    <div class="search-bar">
-                        <i data-feather="search" class="search-icon"></i>
-                        <input type="text" placeholder="Buscar por nombre o Código..." class="search-input" id="searchInput">
-                    </div>
                     <a href="/autoparte/nueva" class="btn-primary" style="text-decoration: none;">
                         <i data-feather="plus"></i> Nueva Autoparte
                     </a>
                 </div>
             </header>
 
-            <!-- Barra de Filtros -->
-            <div style="display:flex; gap:0.75rem; flex-wrap:wrap; align-items:center; margin-bottom:1.2rem; padding:0.8rem 1rem; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:12px;">
+            <!-- Barra de Búsqueda + Filtros -->
+            <div style="display:flex; flex-direction:column; gap:0.65rem; margin-bottom:1.2rem; padding:0.9rem 1rem; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:12px;">
 
-                <span style="font-size:0.8rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.08em; margin-right:0.3rem;">
-                    <i data-feather="filter" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;"></i> Filtros:
-                </span>
+                <!-- Buscador -->
+                <div style="display:flex; gap:0.6rem; align-items:center;">
+                    <div style="flex:1; display:flex; align-items:center; gap:0.5rem; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.45rem 0.75rem;">
+                        <i data-feather="search" style="width:15px;height:15px;color:rgba(255,255,255,0.35);flex-shrink:0;"></i>
+                        <input type="text" id="searchInput" placeholder="Buscar por nombre o código..." value="{{ busqueda }}"
+                            style="background:none; border:none; outline:none; color:#e0d6da; font-size:0.85rem; width:100%;"
+                            oninput="debounceBusqueda(this.value)">
+                        {% if busqueda %}
+                        <button onclick="limpiarBusqueda()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.3);padding:0;line-height:1;" title="Limpiar búsqueda">
+                            <i data-feather="x" style="width:14px;height:14px;"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                    <span style="font-size:0.75rem; color:rgba(255,255,255,0.3); white-space:nowrap;">
+                        {{ autopartes|length }} resultado{{ 's' if autopartes|length != 1 else '' }}
+                    </span>
+                </div>
 
-                <!-- Filtro por Tipo -->
-                <select id="filtroTipo" onchange="aplicarFiltros()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#e0d6da; padding:0.45rem 0.7rem; border-radius:8px; font-size:0.82rem; cursor:pointer; min-width:140px;">
-                    <option value="">Todos los tipos</option>
-                    {% for t in tipos %}
-                    <option value="{{ t.id }}" {% if filtro_tipo == t.id|string %}selected{% endif %}>{{ t.nombre }}</option>
-                    {% endfor %}
-                </select>
+                <!-- Fila de filtros -->
+                <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center;">
+                    <span style="font-size:0.75rem; color:rgba(255,255,255,0.35); text-transform:uppercase; letter-spacing:0.07em; white-space:nowrap;">
+                        <i data-feather="filter" style="width:13px;height:13px;vertical-align:-2px;margin-right:3px;"></i>Filtros:
+                    </span>
 
-                <!-- Filtro por Marca -->
-                <select id="filtroMarca" onchange="aplicarFiltros()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#e0d6da; padding:0.45rem 0.7rem; border-radius:8px; font-size:0.82rem; cursor:pointer; min-width:140px;">
-                    <option value="">Todas las marcas</option>
-                    {% for m in marcas %}
-                    <option value="{{ m.id }}" {% if filtro_marca == m.id|string %}selected{% endif %}>{{ m.nombre }}</option>
-                    {% endfor %}
-                </select>
+                    <!-- Tipo de autoparte -->
+                    <select id="filtroTipo" onchange="aplicarFiltros()" title="Tipo de autoparte"
+                        style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#e0d6da; padding:0.4rem 0.7rem; border-radius:8px; font-size:0.82rem; cursor:pointer; min-width:145px;">
+                        <option value="">Todos los tipos</option>
+                        {% for t in tipos %}
+                        <option value="{{ t.id }}" {% if filtro_tipo == t.id|string %}selected{% endif %}>{{ t.nombre }}</option>
+                        {% endfor %}
+                    </select>
 
-                <div style="width:1px; height:24px; background:rgba(255,255,255,0.08);"></div>
+                    <!-- Marca -->
+                    <select id="filtroMarca" onchange="aplicarFiltros()" title="Marca"
+                        style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#e0d6da; padding:0.4rem 0.7rem; border-radius:8px; font-size:0.82rem; cursor:pointer; min-width:140px;">
+                        <option value="">Todas las marcas</option>
+                        {% for m in marcas %}
+                        <option value="{{ m.id }}" {% if filtro_marca == m.id|string %}selected{% endif %}>{{ m.nombre }}</option>
+                        {% endfor %}
+                    </select>
 
-                <span style="font-size:0.8rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.08em;">
-                    <i data-feather="arrow-up-down" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;"></i> Orden:
-                </span>
+                    <!-- Rango de precio -->
+                    <div style="display:flex; align-items:center; gap:0.35rem;">
+                        <span style="font-size:0.75rem; color:rgba(255,255,255,0.35); white-space:nowrap;">$</span>
+                        <input type="number" id="precioMin" placeholder="Mín" min="0" step="0.01" value="{{ precio_min }}"
+                            title="Precio mínimo"
+                            style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#e0d6da; padding:0.4rem 0.6rem; border-radius:8px; font-size:0.82rem; width:80px;"
+                            oninput="debounceFiltros()">
+                        <span style="font-size:0.75rem; color:rgba(255,255,255,0.3);">—</span>
+                        <input type="number" id="precioMax" placeholder="Máx" min="0" step="0.01" value="{{ precio_max }}"
+                            title="Precio máximo"
+                            style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#e0d6da; padding:0.4rem 0.6rem; border-radius:8px; font-size:0.82rem; width:80px;"
+                            oninput="debounceFiltros()">
+                    </div>
 
-                <!-- Orden -->
-                <select id="filtroOrden" onchange="aplicarFiltros()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#e0d6da; padding:0.45rem 0.7rem; border-radius:8px; font-size:0.82rem; cursor:pointer; min-width:150px;">
-                    <option value="" {% if not orden %}selected{% endif %}>Nombre A→Z</option>
-                    <option value="nombre_desc" {% if orden == 'nombre_desc' %}selected{% endif %}>Nombre Z→A</option>
-                    <option value="precio_asc" {% if orden == 'precio_asc' %}selected{% endif %}>Precio: Menor a Mayor</option>
-                    <option value="precio_desc" {% if orden == 'precio_desc' %}selected{% endif %}>Precio: Mayor a Menor</option>
-                </select>
+                    <div style="width:1px; height:22px; background:rgba(255,255,255,0.08);"></div>
 
-                {% if filtro_tipo or filtro_marca or orden %}
-                <a href="/inventario" style="font-size:0.8rem; color:#f87171; text-decoration:none; margin-left:auto; display:flex; align-items:center; gap:4px;">
-                    <i data-feather="x" style="width:14px;height:14px;"></i> Limpiar
-                </a>
-                {% endif %}
+                    <span style="font-size:0.75rem; color:rgba(255,255,255,0.35); text-transform:uppercase; letter-spacing:0.07em; white-space:nowrap;">
+                        <i data-feather="arrow-up-down" style="width:13px;height:13px;vertical-align:-2px;margin-right:3px;"></i>Orden:
+                    </span>
+
+                    <!-- Orden -->
+                    <select id="filtroOrden" onchange="aplicarFiltros()" title="Orden"
+                        style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#e0d6da; padding:0.4rem 0.7rem; border-radius:8px; font-size:0.82rem; cursor:pointer; min-width:155px;">
+                        <option value="" {% if not orden %}selected{% endif %}>Nombre A→Z</option>
+                        <option value="nombre_desc" {% if orden == 'nombre_desc' %}selected{% endif %}>Nombre Z→A</option>
+                        <option value="precio_asc" {% if orden == 'precio_asc' %}selected{% endif %}>Precio: Menor a Mayor</option>
+                        <option value="precio_desc" {% if orden == 'precio_desc' %}selected{% endif %}>Precio: Mayor a Menor</option>
+                    </select>
+
+                    {% if filtro_tipo or filtro_marca or orden or busqueda or precio_min or precio_max %}
+                    <a href="/inventario" style="font-size:0.8rem; color:#f87171; text-decoration:none; margin-left:auto; display:flex; align-items:center; gap:4px; white-space:nowrap;">
+                        <i data-feather="x" style="width:13px;height:13px;"></i> Limpiar filtros
+                    </a>
+                    {% endif %}
+                </div>
             </div>
 
             <!-- Tabla de Datos -->
@@ -167,17 +201,20 @@
             <h3 style="margin-top:0;">Confirmar Eliminación</h3>
             <p>¿Estás seguro de que deseas eliminar <strong id="productName"></strong>?</p>
             <div class="modal-actions" style="margin-top:20px;text-align:right;">
-                <button type="button" class="btn-secondary" onclick="hideDeleteModal()" style="margin-right:10px;cursor:pointer;">Cancelar</button>
+                <button type="button" class="btn-secondary" onclick="hideDeleteModal()" style="margin-right:10px;cursor:pointer;background:var(--dark-2);border:1px solid var(--border);color:var(--text-muted);padding:0.55rem 1.4rem;border-radius:var(--radius-sm);font-family:'Rajdhani',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:0.1em;text-transform:uppercase;">CANCELAR</button>
                 <form id="deleteForm" action="" method="POST" style="display:inline;">
-                    <button type="submit" class="btn-primary" style="background-color:var(--error-color,#e53e3e);cursor:pointer;">Eliminar</button>
+                    <button type="submit" class="btn-primary" style="cursor:pointer;padding:0.55rem 1.4rem;">ELIMINAR</button>
                 </form>
             </div>
         </div>
     </div>
 
     <style>
-        .modal-overlay { position:fixed;top:0;left:0;right:0;bottom:0;background-color:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:1000; }
-        .modal-content { background:white;padding:24px;border-radius:8px;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:400px;width:100%; }
+        .modal-overlay { position:fixed;top:0;left:0;right:0;bottom:0;background-color:rgba(0,0,0,0.6);display:flex;justify-content:center;align-items:center;z-index:1000;backdrop-filter:blur(4px); }
+        .modal-content { background:var(--dark);border:1px solid var(--border);padding:28px 32px;border-radius:var(--radius-md);box-shadow:0 12px 40px rgba(0,0,0,0.5);max-width:420px;width:100%;color:var(--text); }
+        .modal-content h3 { color:var(--text);font-family:'Rajdhani',sans-serif;font-size:1.3rem;font-weight:700; }
+        .modal-content p { color:var(--text-muted);font-size:0.95rem; }
+        .modal-content strong { color:var(--orange); }
     </style>
 
     <script>
@@ -192,25 +229,41 @@
             document.getElementById('deleteModal').style.display = 'none';
         }
 
-        // Búsqueda local
-        document.getElementById('searchInput').addEventListener('input', function() {
-            var filter = this.value.toLowerCase();
-            var rows = document.querySelectorAll('.data-table tbody tr');
-            rows.forEach(function(row) {
-                row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
-            });
-        });
-
-        // Filtros server-side
+        // Construye la URL con todos los filtros activos y navega
         function aplicarFiltros() {
-            var tipo = document.getElementById('filtroTipo').value;
-            var marca = document.getElementById('filtroMarca').value;
-            var orden = document.getElementById('filtroOrden').value;
-            var params = new URLSearchParams();
-            if (tipo) params.set('tipo', tipo);
-            if (marca) params.set('marca', marca);
-            if (orden) params.set('orden', orden);
+            var tipo    = document.getElementById('filtroTipo').value;
+            var marca   = document.getElementById('filtroMarca').value;
+            var orden   = document.getElementById('filtroOrden').value;
+            var busq    = document.getElementById('searchInput').value.trim();
+            var pMin    = document.getElementById('precioMin').value;
+            var pMax    = document.getElementById('precioMax').value;
+            var params  = new URLSearchParams();
+            if (busq)   params.set('busqueda', busq);
+            if (tipo)   params.set('tipo', tipo);
+            if (marca)  params.set('marca', marca);
+            if (pMin)   params.set('precio_min', pMin);
+            if (pMax)   params.set('precio_max', pMax);
+            if (orden)  params.set('orden', orden);
             window.location.href = '/inventario' + (params.toString() ? '?' + params.toString() : '');
+        }
+
+        // Debounce para búsqueda de texto (500 ms)
+        var _busquedaTimer = null;
+        function debounceBusqueda(val) {
+            clearTimeout(_busquedaTimer);
+            _busquedaTimer = setTimeout(aplicarFiltros, 500);
+        }
+
+        // Debounce para precios (700 ms)
+        var _filtrosTimer = null;
+        function debounceFiltros() {
+            clearTimeout(_filtrosTimer);
+            _filtrosTimer = setTimeout(aplicarFiltros, 700);
+        }
+
+        function limpiarBusqueda() {
+            document.getElementById('searchInput').value = '';
+            aplicarFiltros();
         }
     </script>
 </body>

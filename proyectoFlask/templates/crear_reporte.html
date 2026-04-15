@@ -482,37 +482,37 @@
 
             // Date filters: ventas & pedidos
             document.querySelectorAll('.filtro-fecha').forEach(el => {
-                el.style.display = (tipo === 'ventas' || tipo === 'pedidos') ? '' : 'none';
+                el.style.display = (tipo === 'ventas' || tipo === 'pedidos') ? 'flex' : 'none';
             });
 
             // Estado filter: pedidos only
             document.querySelectorAll('.filtro-estado').forEach(el => {
-                el.style.display = (tipo === 'pedidos') ? '' : 'none';
+                el.style.display = (tipo === 'pedidos') ? 'flex' : 'none';
             });
 
             // Pedidos: ordenar por artículos
             document.querySelectorAll('.filtro-pedidos-orden').forEach(el => {
-                el.style.display = (tipo === 'pedidos') ? '' : 'none';
+                el.style.display = (tipo === 'pedidos') ? 'flex' : 'none';
             });
 
             // Marca filter: ventas & inventario
             document.querySelectorAll('.filtro-marca').forEach(el => {
-                el.style.display = (tipo === 'ventas' || tipo === 'inventario') ? '' : 'none';
+                el.style.display = (tipo === 'ventas' || tipo === 'inventario') ? 'flex' : 'none';
             });
 
             // Top filter: ventas only
             document.querySelectorAll('.filtro-top').forEach(el => {
-                el.style.display = (tipo === 'ventas') ? '' : 'none';
+                el.style.display = (tipo === 'ventas') ? 'flex' : 'none';
             });
 
             // Inventario: tipo de artículo
             document.querySelectorAll('.filtro-inv-tipo').forEach(el => {
-                el.style.display = (tipo === 'inventario') ? '' : 'none';
+                el.style.display = (tipo === 'inventario') ? 'flex' : 'none';
             });
 
             // Ordenar: inventario & clientes
             document.querySelectorAll('.filtro-inv-orden').forEach(el => {
-                el.style.display = (tipo === 'inventario' || tipo === 'clientes') ? '' : 'none';
+                el.style.display = (tipo === 'inventario' || tipo === 'clientes') ? 'flex' : 'none';
             });
 
             // Update inventario/clientes ordenar options based on type
@@ -537,12 +537,12 @@
 
             // Inventario: precio min/max
             document.querySelectorAll('.filtro-inv-precio').forEach(el => {
-                el.style.display = (tipo === 'inventario') ? '' : 'none';
+                el.style.display = (tipo === 'inventario') ? 'flex' : 'none';
             });
 
             // Alfabético: all types
             document.querySelectorAll('.filtro-alfa').forEach(el => {
-                el.style.display = tipo ? '' : 'none';
+                el.style.display = tipo ? 'flex' : 'none';
             });
         }
 
